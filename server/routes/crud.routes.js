@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {createRoom} = require("../services/chatService");
+const {searchSong} = require("../services/ytMusic");
 const {
   handleRecord,
   handleGetRecord,
@@ -14,5 +15,5 @@ router.post("/deleterecord", handleDeleteRecord);
 router.put("/updaterecord", handleUpdateRecord);
 
 router.get("/create", createRoom);
-
+router.get("/search", searchSong);
 module.exports = router;

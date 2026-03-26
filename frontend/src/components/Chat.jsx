@@ -1,24 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { IoSend } from "react-icons/io5";
-import { io } from 'socket.io-client'
 
-const socket = io("http://localhost:3000");
 
-socket.on("connect", () => {
-    console.log("Connected to server");
-});
-
-export default function Chat({ roomId, sessionId, userName, className }) {
+export default function Chat({ roomId, sessionId, userName, className, socket }) {
     const senderId = userName;
     const [chat, setChat] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [messageObj, setMessageObj] = useState({ message: "", sender: senderId });
     const messageEndRef = useRef(null);
+    const [rotation, setRotation] = useState({ x: 0, y: 15 });
+
+    const cardRef = useRef(null);
+
+    const handleMouseMove = (e) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const rotateY = -((mouseX / width) - 1.4) * 20;
+        const rotateX = ((mouseY / height) - 0.5) * 20;
+
+        setRotation({ x: rotateX, y: rotateY });
+    };
+
+    const handleMouseLeave = () => {
+        setRotation({ x: 0, y: 15 });
+    };
+
 
     useEffect(() => {
         const timestamp = Date.now();
         socket.emit('join-room', roomId, senderId, timestamp);
 
         socket.on('room-history', (history) => {
+            setIsLoading(false);
             setChat(history);
         });
 
@@ -51,27 +69,43 @@ export default function Chat({ roomId, sessionId, userName, className }) {
     }
     return (
         <>
-            <div className={`flex flex-col max-w-80 h-120 p-5 m-10 bg-white/3 rounded-xl border border-white/10 ${className || ''}`}>
+            <div
+                ref={cardRef}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                style={{
+                    transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+                    transition: rotation.x === 0 && rotation.y === 15 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
+                    transformStyle: 'preserve-3d'
+                }}
+                className='flex flex-col w-full max-w-80 h-120 p-5 m-2 bg-white/3 rounded-xl border border-white/10 shadow-2xl bg-white/5 backdrop-blur-md border border-white/20'
+            >
                 <div className="flex flex-col font-light tracking-tight mb-2 h-full overflow-auto overscroll-contain scrollbar">
                     {
-                        chat.map((messageObj, index) => {
-                            const msgClass = messageObj.sender === "System" ? "w-full font-medium text-gray-500 uppercase text-sm" : "w-full break-all whitespace-pre-wrap";
-                            const isMe = messageObj.sender === senderId;
-                            const isSystem = messageObj.sender === "System";
-                            const lastSender = chat[index - 1]?.sender;
-                            return (
-                                <div className={`flex flex-row flex-wrap tracking-tight w-full`} key={index}>
-                                    <p className={`${msgClass} font-medium text-purple-300`}>
-                                        {
-                                            isSystem ? "" : lastSender === messageObj.sender ? "" : isMe ? "You" : messageObj.sender
-                                        }
-                                    </p>
-                                    <p className={`${msgClass} text-sm`}>
-                                        {messageObj.message}
-                                    </p>
-                                </div>
-                            )
-                        })
+                        isLoading ? (
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+                            </div>
+                        ) : (
+                            chat.map((messageObj, index) => {
+                                const msgClass = messageObj.sender === "System" ? "w-full font-medium text-gray-500 uppercase text-sm" : "w-full break-all whitespace-pre-wrap";
+                                const isMe = messageObj.sender === senderId;
+                                const isSystem = messageObj.sender === "System";
+                                const lastSender = chat[index - 1]?.sender;
+                                return (
+                                    <div className={`flex flex-row flex-wrap tracking-tight w-full`} key={index}>
+                                        <p className={`${msgClass} font-medium text-purple-300`}>
+                                            {
+                                                isSystem ? "" : lastSender === messageObj.sender ? "" : isMe ? "You" : messageObj.sender
+                                            }
+                                        </p>
+                                        <p className={`${msgClass} text-sm`}>
+                                            {messageObj.message}
+                                        </p>
+                                    </div>
+                                )
+                            })
+                        )
                     }
                     <div ref={messageEndRef} />
                 </div>

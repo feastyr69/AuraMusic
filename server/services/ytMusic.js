@@ -1,0 +1,38 @@
+const {redisClient} = require("../config/redis");
+
+const searchSong = async (req,res) =>{
+    try{
+        const songName = req.query.query;
+        const cachedData = await redisClient.get(`search:${songName}`);
+        if(cachedData){
+            return res.status(200).json(JSON.parse(cachedData));
+        }
+        const {default: YTMusic} = await import("ytmusic-api");
+        const ytmusic = new YTMusic();
+        await ytmusic.initialize(); 
+        const data = await ytmusic.searchSongs(songName);
+        const searchKey = `search:${songName}`;
+        await redisClient.set(searchKey, JSON.stringify(data));
+        await redisClient.expire(searchKey, 60 * 60);
+        
+        return res.status(200).json(data);
+    }catch(err){
+        console.log("error aya");
+        return res.status(500).json([]);
+    }
+}
+
+const cueSong = async (roomId,videoId) =>{
+    try{
+        const data = await ytmusic.getSong(videoId);
+        const cueKey = `room:${roomId}:cue`;
+        await redisClient.rPush(cueKey, JSON.stringify(data));
+        await redisClient.expire(cueKey, 60 * 60);
+        return data;
+    }catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+module.exports = {searchSong,cueSong};

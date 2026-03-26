@@ -19,6 +19,7 @@
     "nanoid": "^5.1.7",
     "nodemon": "^3.1.11",
     "redis": "^5.11.0",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "ytmusic-api": "^5.3.1"
   }
 }
