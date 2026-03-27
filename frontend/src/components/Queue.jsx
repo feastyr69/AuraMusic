@@ -120,7 +120,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                             ) : searchResults.map((song, index) => {
                                 if (index > 5) return null;
                                 return (
-                                    <div key={song.videoId} className='flex flex-row w-full items-center mb-1 p-1 hover:bg-white/10 rounded-lg hover:cursor-pointer transition duration-300' onMouseDown={() => handleSearchClick(song.videoId)}>
+                                    <div key={index} className='flex flex-row w-full items-center mb-1 p-1 hover:bg-white/10 rounded-lg hover:cursor-pointer transition duration-300' onMouseDown={() => handleSearchClick(song.videoId)}>
                                         <img src={`https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0 mr-3" />
                                         <div className='flex-1 min-w-0'>
                                             <p className='text-sm truncate whitespace-nowrap'>{song.name}</p>

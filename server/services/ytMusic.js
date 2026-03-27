@@ -49,15 +49,39 @@ const getQueue = async (roomId) => {
     }
 }
 
-const currentSong = async (roomId) => {
+const nextSong = async (roomId) => {
     try{
         const cueKey = `room:${roomId}:cue`;
-        const data = await redisClient.lRange(cueKey, 0, 0);
-        return data.map((item) => JSON.parse(item));
+        await redisClient.lPop(cueKey);
+        const data = await getQueue(roomId);
+        return data;
     }catch(err){
         console.log(err);
         return [];
     }
 }
 
-module.exports = {searchSong,cueSong,getQueue,currentSong};
+const syncSong = async (roomId,songData) => {
+    try{
+        const songKey = `room:${roomId}:song`;
+        await redisClient.set(songKey, JSON.stringify(songData));
+        await redisClient.expire(songKey, 60 * 60);
+        return songData;
+    }catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+const getSyncSong = async (roomId) => {
+    try{
+        const songKey = `room:${roomId}:song`;
+        const data = await redisClient.get(songKey);
+        return JSON.parse(data);
+    }catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+module.exports = {searchSong,cueSong,getQueue,nextSong,syncSong,getSyncSong};
