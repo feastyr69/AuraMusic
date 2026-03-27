@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import Navbar from './Navbar'
 import Chat from './Chat'
 import Player from './Player'
@@ -7,6 +7,8 @@ import { useParams } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid';
 import generateUserName from '../utils/nameGenerator';
 import { io } from 'socket.io-client'
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { animate } from 'motion';
 
 let sessionId = localStorage.getItem("sessionId");
 let userName = localStorage.getItem("userName");
@@ -34,14 +36,23 @@ export default function Jam() {
     return (
         <>
             <Navbar />
-            <div className="flex flex-row items-center justify-center m-10">
+            <div className="relative w-full flex justify-center overflow-hidden">
 
-                <Chat roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
+                <div
+                    className="flex flex-row w-full items-center justify-start xl:justify-center mt-8 lg:m-8 p-10 overflow-x-auto overflow-y-clip snap-x snap-mandatory gap-4"
+                >
+                    <div className="snap-center shrink-0">
+                        <Chat roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
+                    </div>
 
-                <div className='w-full max-w-150 m-3'>
-                    <Player roomId={roomId} sessionId={sessionId} userName={userName} />
+                    <div className='snap-center shrink-1 w-[90%] md:w-full max-w-120 min-w-80'>
+                        <Player roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
+                    </div>
+
+                    <div className="snap-center shrink-0">
+                        <Queue roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
+                    </div>
                 </div>
-                <Queue roomId={roomId} sessionId={sessionId} userName={userName} />
             </div>
         </>
     )

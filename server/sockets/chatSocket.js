@@ -1,5 +1,5 @@
 const { getRoomHistory, saveMessage } = require("../services/chatService");
-const { cueSong } = require("../services/ytMusic");
+const { cueSong,getQueue,currentSong } = require("../services/ytMusic");
 
 const connectIO = (io) => {
     io.on("connection", (socket) => {
@@ -26,8 +26,21 @@ const connectIO = (io) => {
 
         //user cue song
         socket.on("cue-song", async (roomId,videoId) => {
-            const data = await cueSong(roomId,videoId);
-            socket.to(roomId).emit("cue-results", data);
+            await cueSong(roomId,videoId);
+            const updatedQueue = await getQueue(roomId);
+            io.to(roomId).emit("queue-results", updatedQueue);
+        });
+
+        //user get queue
+        socket.on("get-queue", async (roomId) => {
+            const data = await getQueue(roomId);
+            io.to(roomId).emit("queue-results", data);
+        });
+
+        //user get current song
+        socket.on("get-current-song", async (roomId) => {
+            const data = await currentSong(roomId);
+            io.to(roomId).emit("current-song", data);
         });
 
         //user disconnect

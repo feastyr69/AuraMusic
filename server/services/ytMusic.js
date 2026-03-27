@@ -24,6 +24,9 @@ const searchSong = async (req,res) =>{
 
 const cueSong = async (roomId,videoId) =>{
     try{
+        const {default: YTMusic} = await import("ytmusic-api");
+        const ytmusic = new YTMusic();
+        await ytmusic.initialize(); 
         const data = await ytmusic.getSong(videoId);
         const cueKey = `room:${roomId}:cue`;
         await redisClient.rPush(cueKey, JSON.stringify(data));
@@ -35,4 +38,26 @@ const cueSong = async (roomId,videoId) =>{
     }
 }
 
-module.exports = {searchSong,cueSong};
+const getQueue = async (roomId) => {
+    try{
+        const cueKey = `room:${roomId}:cue`;
+        const data = await redisClient.lRange(cueKey, 0, -1);
+        return data.map((item) => JSON.parse(item));
+    }catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+const currentSong = async (roomId) => {
+    try{
+        const cueKey = `room:${roomId}:cue`;
+        const data = await redisClient.lRange(cueKey, 0, 0);
+        return data.map((item) => JSON.parse(item));
+    }catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+module.exports = {searchSong,cueSong,getQueue,currentSong};

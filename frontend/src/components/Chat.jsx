@@ -75,12 +75,12 @@ export default function Chat({ roomId, sessionId, userName, className, socket })
                 onMouseLeave={handleMouseLeave}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: rotation.x === 0 && rotation.y === 15 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
+                    transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-full max-w-80 h-120 p-5 m-2 bg-white/3 rounded-xl border border-white/10 shadow-2xl bg-white/5 backdrop-blur-md border border-white/20'
+                className='flex flex-col w-80 h-120 p-4 bg-white/3 rounded-xl border border-white/10 shadow-2xl bg-white/5 backdrop-blur-md border border-white/20'
             >
-                <div className="flex flex-col font-light tracking-tight mb-2 h-full overflow-auto overscroll-contain scrollbar">
+                <div className="flex flex-col font-light tracking-tight mb-2 h-full overflow-auto overscroll-contain scrollbar snap-y">
                     {
                         isLoading ? (
                             <div className="flex flex-col items-center justify-center h-full">
@@ -88,7 +88,7 @@ export default function Chat({ roomId, sessionId, userName, className, socket })
                             </div>
                         ) : (
                             chat.map((messageObj, index) => {
-                                const msgClass = messageObj.sender === "System" ? "w-full font-medium text-gray-500 uppercase text-sm" : "w-full break-all whitespace-pre-wrap";
+                                const msgClass = messageObj.sender === "System" ? "w-full font-medium text-gray-500 uppercase text-sm" : "w-full break-words whitespace-pre-wrap";
                                 const isMe = messageObj.sender === senderId;
                                 const isSystem = messageObj.sender === "System";
                                 const lastSender = chat[index - 1]?.sender;
