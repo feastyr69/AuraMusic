@@ -1,13 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Syne:wght@400..800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Poppins", sans-serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Syne", system-ui, sans-serif;
+
+  --color-aura-bg: #020203;
+  --color-aura-surface: rgba(255, 255, 255, 0.04);
+  --color-aura-border: rgba(255, 255, 255, 0.08);
+  --color-aura-muted: #a1a1aa;
+  --color-aura-accent: #d4a574;
+  --color-aura-accent-dim: #b8956a;
+  --color-aura-accent-glow: rgba(212, 165, 116, 0.15);
+
+  --color-aura-50: #faf6f0;
+  --color-aura-100: #f0e6d8;
+  --color-aura-200: #dcc9a8;
+  --color-aura-300: #c9a86c;
+  --color-aura-400: #d4a574;
+  --color-aura-500: #b8956a;
+  --color-aura-600: #8f6f4a;
 }
 
 @layer base {
   * {
-    font-family: "Poppins", sans-serif;
+    font-family: var(--font-sans);
   }
 
   html {
@@ -15,14 +32,98 @@
   }
 
   body {
-    @apply m-0 p-0 box-border bg-[#0B0F19] text-slate-200;
-    background-image: radial-gradient(circle at top center, #1e1b4b 0%, #0B0F19 100%);
+    @apply m-0 p-0 box-border text-zinc-200;
+    background-color: #000000;
+
+    background-image:
+      radial-gradient(ellipse 135% 100% at 50% 28%,
+        transparent 0%,
+        transparent 38%,
+        rgba(0, 0, 0, 0.55) 72%,
+        rgba(0, 0, 0, 0.92) 100%),
+      radial-gradient(ellipse 100% 80% at 50% 50%,
+        transparent 52%,
+        rgba(0, 0, 0, 0.65) 100%),
+      radial-gradient(ellipse 95% 75% at 50% -8%,
+        rgba(72, 72, 82, 0.42) 0%,
+        rgba(42, 42, 48, 0.18) 42%,
+        transparent 68%),
+      radial-gradient(ellipse 80% 58% at 50% 2%,
+        rgba(212, 165, 116, 0.16) 0%,
+        rgba(212, 165, 116, 0.04) 45%,
+        transparent 62%),
+      radial-gradient(ellipse 90% 45% at 50% 105%,
+        rgba(30, 28, 35, 0.55) 0%,
+        transparent 48%),
+      linear-gradient(185deg,
+        #0a0a0c 0%,
+        var(--color-aura-bg) 42%,
+        #000000 100%);
     background-attachment: fixed;
     overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.2;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    z-index: 0;
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
   }
 }
 
 @layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .hero-panel-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 85% 75% at 50% 45%,
+        black 0%,
+        rgba(0, 0, 0, 0.5) 55%,
+        transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 45%,
+        black 0%,
+        rgba(0, 0, 0, 0.5) 55%,
+        transparent 100%);
+  }
+
+  .hero-panel-shine {
+    background: linear-gradient(105deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.06) 45%,
+        rgba(212, 165, 116, 0.08) 50%,
+        rgba(255, 255, 255, 0.04) 55%,
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: hero-shine 14s ease-in-out infinite;
+  }
+
+  @keyframes hero-shine {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
   .scrollbar::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -30,16 +131,31 @@
 
   .scrollbar::-webkit-scrollbar-track {
     border-radius: 100vh;
-    background: #f7f4ed12;
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .scrollbar::-webkit-scrollbar-thumb {
-    background: #49485d;
+    background: rgba(161, 161, 170, 0.35);
     border-radius: 100vh;
-    border: 3px solid #49485d;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   .scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #49485d;
+    background: rgba(212, 165, 116, 0.35);
+    background-clip: padding-box;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }

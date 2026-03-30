@@ -74,6 +74,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
     }, [roomId])
 
     const handleSearchClick = (videoId) => {
+        socket.emit('log-action', roomId, userName, "cued", Date.now());
         socket.emit('cue-song', roomId, videoId);
         socket.emit('get-queue', roomId);
     }
@@ -89,22 +90,23 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-80 h-120 p-5 bg-white/3 rounded-xl border border-white/10 shadow-2xl bg-white/5 backdrop-blur-md border border-white/20'>
+                className='flex flex-col w-80 h-120 p-5 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/[0.04] backdrop-blur-xl border border-white/[0.1]'>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Add to queue</p>
                 <div className='relative w-full h-full'>
                     <div className='flex flex-row w-full items-center relative'>
                         <input
                             type="text"
-                            placeholder='Search song to play'
-                            className='w-full p-2 my-1 text-sm rounded-xl border border-white/10 pr-10 bg-transparent outline-none focus:border-white/30 text-white'
+                            placeholder='Search for a song'
+                            className='w-full p-2.5 my-1 text-sm rounded-xl border border-white/[0.1] pr-10 bg-white/[0.03] outline-none focus:border-aura-400/40 text-zinc-200 placeholder:text-zinc-500'
                             onChange={handleSearchInput}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                         />
-                        <FaSearch className='text-white/70 absolute right-3 pointer-events-none' />
+                        <FaSearch className='text-zinc-500 absolute right-3 pointer-events-none' />
                     </div>
 
                     {isFocused && (isSearching || searchResults.length > 0) && (
-                        <div className='absolute top-12 left-0 w-full flex flex-col mt-2 bg-slate-900 border border-white/10 backdrop-blur-3xl p-2 px-3 rounded-xl z-50'>
+                        <div className='absolute top-12 left-0 w-full flex flex-col mt-2 bg-zinc-950/95 border border-white/[0.1] backdrop-blur-xl p-2 px-3 rounded-xl z-50 shadow-xl'>
                             {isSearching ? (
                                 <div className="flex flex-col gap-2 p-1">
                                     {[1, 2, 3, 4, 5].map(i => (
@@ -133,8 +135,8 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     )}
 
                     <div className='flex flex-col w-full h-full p-2'>
-                        <p className='text-sm truncate whitespace-nowrap uppercase mt-2 text-gray-400'>Up next</p>
-                        <div className='flex flex-col w-full h-[80%] mt-2 rounded-xl border border-white/5 overflow-y-auto scrollbar snap-y'>
+                        <p className='text-[10px] uppercase tracking-[0.2em] mt-3 text-zinc-500 font-medium'>Up next</p>
+                        <div className='flex flex-col w-full h-[80%] mt-2 rounded-xl border border-white/[0.08] overflow-y-auto scrollbar snap-y bg-white/[0.02]'>
                             {
                                 queue.length === 0 ? (
                                     <div className='flex flex-col gap-2 items-center justify-center h-full'>
@@ -146,7 +148,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                     </div>
                                 ) : queue.map((song, index) => {
                                     return (
-                                        <div key={index} className={`flex flex-row w-full items-center mb-1 p-1 hover:bg-slate-800 rounded-lg hover:cursor-pointer transition duration-300 ${index === 0 ? 'bg-slate-900' : ''}`}>
+                                        <div key={index} className={`flex flex-row w-full items-center mb-1 p-1 hover:bg-white/[0.06] rounded-lg hover:cursor-pointer transition duration-300 ${index === 0 ? 'bg-white/[0.06]' : ''}`}>
                                             <div className="relative w-10 h-10 flex-shrink-0 mr-3">
                                                 <img src={`https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`} alt="" className="w-10 h-10 object-cover rounded-md" />
                                                 {index === 0 && (
@@ -154,23 +156,23 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                                         <motion.div
                                                             animate={{ height: ["4px", "12px", "4px"] }}
                                                             transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut" }}
-                                                            className="w-[3px] bg-purple-400 rounded-sm"
+                                                            className="w-[3px] bg-aura-400 rounded-sm"
                                                         />
                                                         <motion.div
                                                             animate={{ height: ["4px", "16px", "4px"] }}
                                                             transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay: 0.2 }}
-                                                            className="w-[3px] bg-purple-400 rounded-sm"
+                                                            className="w-[3px] bg-aura-400 rounded-sm"
                                                         />
                                                         <motion.div
                                                             animate={{ height: ["4px", "8px", "4px"] }}
                                                             transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay: 0.4 }}
-                                                            className="w-[3px] bg-purple-400 rounded-sm"
+                                                            className="w-[3px] bg-aura-400 rounded-sm"
                                                         />
                                                     </div>
                                                 )}
                                             </div>
                                             <div className='flex-1 min-w-0 pr-2'>
-                                                <p className={`text-sm ${index === 0 ? 'text-purple-300 font-medium' : ''} truncate whitespace-nowrap`}>{song.name}</p>
+                                                <p className={`text-sm ${index === 0 ? 'text-aura-400 font-medium' : 'text-zinc-200'} truncate whitespace-nowrap`}>{song.name}</p>
                                                 <p className='text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
                                             </div>
                                         </div>

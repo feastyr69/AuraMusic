@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import YouTube from 'react-youtube';
-import { IoPlay, IoPause, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoShuffle, IoRepeat } from 'react-icons/io5';
+import { IoPlay, IoPause, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh } from 'react-icons/io5';
 import { PiVinylRecordLight } from 'react-icons/pi';
 
 export default function Player({ roomId, sessionId, userName, socket }) {
@@ -8,10 +8,34 @@ export default function Player({ roomId, sessionId, userName, socket }) {
 
     const [rotation, setRotation] = useState({ x: 0, y: 0 });
     const cardRef = useRef(null);
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(true);
     const [progress, setProgress] = useState(0);
+    const [volume, setVolume] = useState(100);
+    const [showVolume, setShowVolume] = useState(false);
+    const volumeRef = useRef(null);
     const [currentSong, setCurrentSong] = useState(null);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
+    const [isBuffering, setIsBuffering] = useState(false);
+
+    const isPlayingRef = useRef(isPlaying);
+    const currentSongRef = useRef(currentSong);
+    const isPlayerReadyRef = useRef(isPlayerReady);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+        currentSongRef.current = currentSong;
+        isPlayerReadyRef.current = isPlayerReady;
+    }, [isPlaying, currentSong, isPlayerReady]);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (volumeRef.current && !volumeRef.current.contains(e.target)) {
+                setShowVolume(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleMouseMove = (e) => {
         if (!cardRef.current) return;
@@ -35,88 +59,176 @@ export default function Player({ roomId, sessionId, userName, socket }) {
     const progressInterval = useRef(null);
     const onReady = (event) => {
         playerRef.current = event.target;
-        console.log(playerRef.current);
+        console.log('just joined, requesting sync')
         playerRef.current.setPlaybackQuality('small');
+        isPlayingRef.current = true;
         setIsPlayerReady(true);
     }
 
     const handlePlay = () => {
-        playerRef.current.playVideo();
+        if (playerRef.current?.playVideo) playerRef.current.playVideo();
         setIsPlaying(true);
     }
 
     const handlePause = () => {
-        playerRef.current.pauseVideo();
+        if (playerRef.current?.pauseVideo) playerRef.current.pauseVideo();
         setIsPlaying(false);
     }
 
     const handleSeek = (sec) => {
         const newProgress = parseFloat(sec.target.value);
-        playerRef.current.seekTo(newProgress);
+        if (playerRef.current?.seekTo) playerRef.current.seekTo(newProgress);
         setProgress(newProgress);
+        socket.emit('sync-song', roomId, {
+            videoId: currentSongRef.current?.videoId,
+            isPlaying: isPlayingRef.current,
+            progress: newProgress,
+            duration: currentSongRef.current?.duration
+        });
     }
 
     const handlePlayPause = () => {
-        const data = {
-            videoId: currentSong.videoId,
-            isPlaying: !isPlaying,
-            time: progress
-        }
-        if (isPlaying) {
-            clearInterval(progressInterval.current);
-            handlePause();
-        } else {
-            progressInterval.current = setInterval(() => {
-                setProgress(playerRef.current.getCurrentTime());
-                if (playerRef.current.getCurrentTime() >= currentSong.duration - 1) {
-                    clearInterval(progressInterval.current);
-                    socket.emit('next-song', roomId);
-                }
-            }, 1000);
+        const newState = !isPlaying;
+        if (newState) {
             handlePlay();
+        } else {
+            handlePause();
         }
-        // socket.emit('play-pause', data);
+
+        const currentSec = playerRef.current?.getCurrentTime ? playerRef.current.getCurrentTime() : 0;
+        socket.emit('sync-song', roomId, {
+            videoId: currentSong?.videoId,
+            isPlaying: newState,
+            progress: currentSec,
+            duration: currentSong?.duration
+        });
     }
 
-    const handleKeyControls = (e) => {
+    const handleNext = () => {
+        if (currentSongRef.current?.duration) {
+            const sec = { target: { value: currentSongRef.current?.duration } };
+            handleSeek(sec);
+        }
+    }
+    const handlePrev = () => {
+        if (currentSongRef.current) {
+            const sec = { target: { value: 0 } };
+            handleSeek(sec);
+        }
+    }
+
+    const handleVolumeChange = (vol) => {
+        const newVolume = parseFloat(vol.target.value);
+        if (playerRef.current?.setVolume) playerRef.current.setVolume(newVolume);
+        setVolume(newVolume);
+    }
+
+    const handleStateChange = (event) => {
+        if (event.data === 3) setIsBuffering(true);
+        else setIsBuffering(false);
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === ' ') {
+            e.preventDefault();
             handlePlayPause();
         }
-    }
+    })
 
     useEffect(() => {
+        if (!isPlayerReady) return;
+        console.log('player ready');
+
+        socket.emit('request-sync', roomId);
+        socket.emit('get-current-song', roomId);
+
+        socket.on('provide-sync', () => {
+            if (currentSongRef.current && isPlayerReadyRef.current) {
+                const currentSec = playerRef.current?.getCurrentTime ? playerRef.current.getCurrentTime() : 0;
+                socket.emit('sync-song', roomId, {
+                    videoId: currentSongRef.current.videoId,
+                    isPlaying: isPlayingRef.current,
+                    progress: currentSec + 1,
+                    duration: currentSongRef.current.duration,
+                    songData: currentSongRef.current
+                });
+            }
+        });
+
         socket.on('current-song', (data) => {
-            console.log(data);
-            setCurrentSong(data);
-            setProgress(0);
+            console.log('song came', data);
+            if (!data) {
+                setCurrentSong(null);
+                playerRef.current.cueVideoById({ videoId: "" });
+                return;
+            }
+            if (currentSongRef.current?.videoId !== data.videoId) setCurrentSong(data);
         })
+
         socket.on('receive-sync-song', (data) => {
-            console.log(data);
-            const { videoId, isPlaying, time } = data;
-            setCurrentSong(videoId);
-            clearInterval(progressInterval.current);
-            const newProgress = parseFloat(time);
-            playerRef.current.seekTo(newProgress);
-            setProgress(newProgress);
-            setIsPlaying(isPlaying);
-            if (isPlaying) {
-                handlePlay();
-                progressInterval.current = setInterval(() => {
-                    setProgress(playerRef.current.getCurrentTime());
-                    if (playerRef.current.getCurrentTime() >= currentSong.duration - 1) {
-                        clearInterval(progressInterval.current);
-                        socket.emit('next-song', roomId);
-                    }
-                }, 1000);
-            } else {
-                handlePause();
+            console.log("receive-sync-song", data);
+            const { videoId, isPlaying: syncIsPlaying, progress: syncProgress, duration: syncDuration, songData } = data;
+            // no song yet (initial join) 
+            if (!currentSongRef.current) {
+                if (songData) setCurrentSong(songData);
+                if (isPlayerReadyRef.current) {
+                    playerRef.current.loadVideoById({ videoId, startSeconds: syncProgress });
+                }
+                setIsPlaying(syncIsPlaying);
+                return;
+            }
+
+            // different song 
+            if (videoId !== currentSongRef.current.videoId) {
+                if (isPlayerReadyRef.current) playerRef.current.loadVideoById(videoId);
+                currentSongRef.current = data;
+                setProgress(syncProgress);
+                setIsPlaying(syncIsPlaying);
+                return;
+            }
+
+            // same song 
+            const currentSec = playerRef.current?.getCurrentTime?.() ?? 0;
+            if (syncProgress !== undefined && Math.abs(currentSec - syncProgress) > 1) {
+                playerRef.current?.seekTo(syncProgress);
+                setProgress(syncProgress);
+            }
+            if (syncIsPlaying !== undefined && syncIsPlaying !== isPlayingRef.current) {
+                syncIsPlaying ? playerRef.current?.playVideo() : playerRef.current?.pauseVideo();
+                setIsPlaying(syncIsPlaying);
             }
         })
+
         return () => {
             socket.off('current-song');
             socket.off('receive-sync-song');
+            socket.off('provide-sync');
         }
-    }, [roomId])
+    }, [roomId, isPlayerReady])
+
+    useEffect(() => {
+        if (!isPlayerReady || !currentSong) return;
+        if (isPlayingRef.current) {
+            progressInterval.current = setInterval(() => {
+                setProgress(playerRef.current.getCurrentTime());
+                const state = playerRef.current.getPlayerState();
+                if (state === 0) {
+                    clearInterval(progressInterval.current);
+                    setIsPlaying(false);
+                    socket.emit('next-song', roomId, currentSong.videoId);
+                    socket.emit('log-action', roomId, userName, "skipped", Date.now());
+                }
+            }, 1000);
+        } else {
+            clearInterval(progressInterval.current);
+        }
+
+        return () => {
+            clearInterval(progressInterval.current);
+        }
+    }, [isPlaying, isPlayerReady, currentSong])
+
 
     return (
         <>
@@ -124,20 +236,19 @@ export default function Player({ roomId, sessionId, userName, socket }) {
                 ref={cardRef}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                onKeyDown={handleKeyControls}
                 tabIndex={0}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
                     transition: rotation.x === 0 && rotation.y === 0 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-full h-120 p-6 bg-white/3 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md justify-between'
+                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-xl justify-between'
             >
                 {/* Hidden YouTube Player */}
-                <div className="absolute opacity-100 pointer-events-none">
-                    {currentSong && <YouTube videoId={currentSong.videoId} opts={{
-                        height: '100',
-                        width: '100',
+                <div className="absolute opacity-0 pointer-events-none">
+                    <YouTube videoId="" opts={{
+                        height: '10',
+                        width: '10',
                         playerVars: {
                             autoplay: 1,
                             playsinline: 1,
@@ -146,27 +257,27 @@ export default function Player({ roomId, sessionId, userName, socket }) {
                         }
                     }}
                         onReady={onReady}
-                    />}
+                        onStateChange={handleStateChange}
+                    />
                 </div>
 
                 {/* Header */}
                 <div className="flex justify-center items-center w-full mb-4">
-                    <p className="text-xs uppercase tracking-widest text-white/50 font-semibold">Now Playing</p>
-                    {/* <div className="flex gap-4 text-white/50">
-                        <IoShuffle className="hover:text-white cursor-pointer transition" size={20} />
-                        <IoRepeat className="hover:text-white cursor-pointer transition" size={20} />
-                    </div> */}
+                    <p className="text-xs uppercase tracking-widest text-zinc-500 font-semibold">Now playing</p>
                 </div>
 
                 {/* Album Art Container */}
-                <div className="w-full flex-1 relative rounded-2xl overflow-hidden shadow-2xl mb-6 group border border-white/5 max-h-64 mx-auto max-w-72 bg-slate-900/50">
+                <div className="w-full flex-1 relative rounded-xl overflow-hidden shadow-2xl mb-6 group border border-white/[0.08] max-h-64 mx-auto max-w-47 bg-zinc-900/60">
+                    {isBuffering && <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-2 border-zinc-400 border-t-aura-400 z-100"></div>
+                    </div>}
                     {currentSong && <img
-                        src={`https://i.ytimg.com/vi/${currentSong.videoId}/mqdefault.jpg`}
+                        src={`https://i.ytimg.com/vi/${currentSong.videoId}/maxresdefault.jpg`}
                         alt="Album Art"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
                     />}
-                    <div className="absolute flex items-center justify-center inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none">
-                        {!currentSong && <PiVinylRecordLight className="text-white/50" size={120} />}
+                    <div className="absolute flex items-center justify-center inset-0 bg-linear-to-t from-black/15 to-transparent pointer-events-none">
+                        {!currentSong && <PiVinylRecordLight className="text-aura-400/40" size={120} />}
                     </div>
                 </div>
 
@@ -174,13 +285,13 @@ export default function Player({ roomId, sessionId, userName, socket }) {
                 <div className="flex flex-col items-center mb-4 text-center w-full px-2">
                     {currentSong ? (
                         <>
-                            <h2 className="text-2xl font-bold text-white tracking-tight truncate w-full shadow-black">{currentSong.name}</h2>
-                            <p className="text-purple-300 font-medium text-sm mt-1 truncate w-full">{currentSong.artist.name}</p>
+                            <h2 className="font-display text-xl md:text-2xl font-semibold text-zinc-100 tracking-tight truncate w-full">{currentSong.name}</h2>
+                            <p className="text-aura-400/90 font-medium text-sm mt-1 truncate w-full">{currentSong.artist.name}</p>
                         </>
                     ) : (
                         <>
-                            <h2 className="text-2xl font-bold text-white tracking-tight truncate w-full shadow-black">No song playing</h2>
-                            <p className="text-purple-300 font-medium text-sm mt-1 truncate w-full">No artist</p>
+                            <h2 className="font-display text-xl md:text-2xl font-semibold text-zinc-300 tracking-tight truncate w-full">No song playing</h2>
+                            <p className="text-zinc-500 font-medium text-sm mt-1 truncate w-full">Add a track from the queue</p>
                         </>
                     )}
                 </div>
@@ -196,10 +307,10 @@ export default function Player({ roomId, sessionId, userName, socket }) {
                                 max={currentSong ? currentSong.duration : 0}
                                 value={progress}
                                 onChange={handleSeek}
-                                className="absolute h-full w-full bg-purple-500 rounded-full group-hover:bg-purple-400 transition-colors cursor-pointer"
+                                className="absolute h-full w-full cursor-pointer accent-aura-400"
                             />
                         </div>
-                        <div className="flex justify-between w-full mt-2 text-[10px] text-white/40 font-medium tracking-wider">
+                        <div className="flex justify-between w-full mt-2 text-[10px] text-zinc-500 font-medium tracking-wider">
                             {currentSong ? <span>
                                 {Math.floor(progress / 60)}:
                                 {Math.floor(progress % 60).toString().padStart(2, '0')}
@@ -212,29 +323,61 @@ export default function Player({ roomId, sessionId, userName, socket }) {
                     </div>
 
                     {/* Main Controls */}
-                    <div className="flex w-full items-center justify-between px-2 pt-1">
-                        <button className="text-white/50 hover:text-white transition group w-8 flex-1">
-                            <IoVolumeHigh size={24} className="group-hover:scale-110 transition-transform" />
-                        </button>
+                    <div className="relative flex w-full items-center justify-between px-2 pt-1">
+                        <div className="flex w-8 relative" ref={volumeRef}>
+                            <button
+                                type="button"
+                                onClick={() => setShowVolume(!showVolume)}
+                                className="text-zinc-500 hover:text-zinc-200 transition"
+                                aria-label="Volume"
+                            >
+                                <IoVolumeHigh size={24} />
+                            </button>
+                            {showVolume && (
+                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center bg-zinc-900/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl"
+                                    style={{ width: 36, height: 120 }}>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={volume}
+                                        onChange={handleVolumeChange}
+                                        className="cursor-pointer accent-aura-400"
+                                        style={{ width: 90, transform: 'rotate(-90deg)' }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
 
                         <div className="flex items-center gap-6">
-                            <button className="text-white hover:text-purple-400 transition hover:scale-110 drop-shadow-lg">
+                            <button type="button"
+                                onClick={handlePrev}
+                                className="text-zinc-200 hover:text-aura-400 transition hover:scale-110 drop-shadow-lg" aria-label="Previous">
                                 <IoPlaySkipBack size={32} />
                             </button>
 
                             <button
-                                className="w-16 h-16 flex items-center justify-center bg-white text-black rounded-full hover:scale-105 hover:bg-purple-50 transition shadow-[0_0_30px_rgba(168,85,247,0.25)]"
+                                type="button"
+                                className="w-16 h-16 flex items-center justify-center bg-aura-400 text-zinc-950 rounded-full hover:scale-105 hover:bg-aura-300 transition shadow-[0_0_28px_rgba(212,165,116,0.25)]"
                                 onClick={handlePlayPause}
+                                aria-label={isPlaying ? 'Pause' : 'Play'}
                             >
-                                {isPlaying ? <IoPause size={30} className="text-slate-900" /> : <IoPlay size={32} className="ml-1 text-slate-900" />}
+                                {isPlaying ? <IoPause size={30} /> : <IoPlay size={32} className="ml-1" />}
                             </button>
 
-                            <button className="text-white hover:text-purple-400 transition hover:scale-110 drop-shadow-lg">
+                            <button type="button"
+                                onClick={handleNext}
+                                className="text-zinc-200 hover:text-aura-400 transition hover:scale-110 drop-shadow-lg" aria-label="Next">
                                 <IoPlaySkipForward size={32} />
                             </button>
                         </div>
-                        <div className="flex justify-end flex-1"> {/* Spacer to balance volume icon */}
-                            <button onClick={() => socket.emit('sync-song', roomId, { videoId: currentSong.videoId, isPlaying, progress })} className="text-white/50 hover:text-white transition group">SYNC</button>
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    socket.emit('request-sync', roomId);
+                                }} className="text-[10px] font-semibold tracking-widest text-zinc-500 hover:text-aura-400 transition uppercase">Sync</button>
                         </div>
                     </div>
                 </div>

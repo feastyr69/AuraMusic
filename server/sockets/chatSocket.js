@@ -1,17 +1,22 @@
 const { getRoomHistory, saveMessage } = require("../services/chatService");
 const { cueSong,getQueue,nextSong} = require("../services/ytMusic");
 
+const skipLocks = new Map();
+
 const connectIO = (io) => {
     io.on("connection", (socket) => {
         console.log("A user connected");
-
 
         //user join room
         socket.on("join-room", async (roomId,senderName,timestamp) => {
             socket.join(roomId);
             console.log(`User ${socket.id} joined room ${roomId}`);
-            await saveMessage(roomId, `${senderName} has joined the room`, "System");
-            socket.to(roomId).emit("receive-message", {message: `${senderName} has joined the room`, sender: "System"});
+            if(!skipLocks.get(senderName+roomId)){
+                socket.to(roomId).emit("receive-message", {message: `${senderName} has joined the room`, sender: "System"});
+                await saveMessage(roomId, `${senderName} has joined the room`, "System");
+            }
+            skipLocks.set(senderName+roomId,true);
+            setTimeout(() => skipLocks.delete(senderName+roomId), 15000);
             const history = await getRoomHistory(roomId);
             socket.emit("room-history", history);
         });
@@ -29,22 +34,53 @@ const connectIO = (io) => {
             await cueSong(roomId,videoId);
             const updatedQueue = await getQueue(roomId);
             io.to(roomId).emit("queue-results", updatedQueue);
-            io.to(roomId).emit("current-song", updatedQueue[0]);
+            if(updatedQueue.length == 1){
+                io.to(roomId).emit("current-song", updatedQueue[0]);
+                io.to(roomId).emit("receive-sync-song", {
+                    videoId: updatedQueue[0].videoId, isPlaying: true, progress: 0, songData: updatedQueue[0]
+                });
+            }
         });
 
         //user get queue
         socket.on("get-queue", async (roomId) => {
             const data = await getQueue(roomId);
             io.to(roomId).emit("queue-results", data);
-            io.to(roomId).emit("current-song", data[0]);
         });
 
         //user next song
-        socket.on("next-song", async (roomId) => {
+        socket.on("next-song", async (roomId, currentVideoId) => {
+            console.log("next song request from room", roomId);
+            if (skipLocks.get(roomId)) {
+                return;
+            }
+            skipLocks.set(roomId, true);
+            setTimeout(() => skipLocks.delete(roomId), 1000);
+
+            const queue = await getQueue(roomId);
+            
+            if (currentVideoId && queue.length > 0 && queue[0].videoId !== currentVideoId) {
+                return;
+            }
+
             const data = await nextSong(roomId);
+            console.log("next song");
+            console.log(data);
             io.to(roomId).emit("queue-results", data);
-            io.to(roomId).emit("current-song", data[0]);
+            io.to(roomId).emit("current-song", data[0] || null);
+            if(data[0]){
+                io.to(roomId).emit("receive-sync-song", {
+                    videoId: data[0].videoId, isPlaying: true, progress: 0, songData: data[0]
+                });
+            }
         });
+
+        //user get current song
+        socket.on("get-current-song", async (roomId) => {
+            const data = await getQueue(roomId);
+            socket.emit("current-song", data[0] || null);
+        });
+        
 
         //user disconnect
         socket.on("disconnect", () => {
@@ -53,9 +89,50 @@ const connectIO = (io) => {
 
         //user sync song
         socket.on("sync-song", async (roomId,songData) => {
-            console.log("sync song",songData);
-            io.to(roomId).emit("receive-sync-song", songData);
+            socket.to(roomId).emit("receive-sync-song", songData);
         });
+
+        //user request sync
+        socket.on("request-sync", async (roomId) => {
+            console.log("request sync from room", roomId);
+            const totalSockets = await io.in(roomId).fetchSockets();
+            if(totalSockets.length > 1){
+                socket.to(roomId).emit("provide-sync");
+            }
+            else{
+
+                const data = await getQueue(roomId);
+                if(data[0])socket.emit("receive-sync-song",{
+                    videoId: data[0].videoId,
+                    isPlaying:true,
+                    progress:0,
+                    duration:data[0].duration,
+                    songData:data[0]
+                })
+            }
+        });
+
+        //user logs action
+
+        socket.on('log-action',async(roomId,sender,action,timestamp)=>{
+            if(action==="skipped"){
+                await saveMessage(roomId,sender+" skipped the song","System");
+                io.to(roomId).emit('receive-message',{
+                    message:sender+" skipped the song",
+                    sender:"System",
+                    timestamp:timestamp
+                })
+            }
+            if(action==="cued"){
+                await saveMessage(roomId,sender+" cued a song","System");
+                io.to(roomId).emit('receive-message',{
+                    message:sender+" cued a song",
+                    sender:"System",
+                    timestamp:timestamp
+                })
+            }
+        })
+
     });
 
     console.log("Sockets connected!")

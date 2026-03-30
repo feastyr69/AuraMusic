@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiBaseURL } from '../axiosInstance';
+import Navbar from './Navbar';
 
 export default function Register() {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -34,63 +35,69 @@ export default function Register() {
     }
   };
 
-  const inputClasses = "w-full px-4 py-3 text-white bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 rounded-xl transition-all duration-300 placeholder:text-slate-500 shadow-inner";
-  const labelClasses = "text-slate-300 text-sm font-semibold ml-1 mb-1 tracking-wide block";
-  const btnClasses = "w-full h-12 px-6 rounded-xl font-bold transition-all duration-300 shadow-lg cursor-pointer flex items-center justify-center tracking-wide bg-linear-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white border-none shadow-cyan-500/20 hover:shadow-cyan-500/40";
+  const inputClasses =
+    "w-full px-4 py-3 text-zinc-100 bg-white/[0.04] border border-white/[0.1] focus:outline-none focus:border-aura-400/45 focus:ring-1 focus:ring-aura-400/25 rounded-xl transition-all duration-300 placeholder:text-zinc-500 shadow-inner";
+  const labelClasses = "text-zinc-400 text-sm font-medium ml-1 mb-1 tracking-wide block";
+  const btnClasses =
+    "w-full h-12 px-6 rounded-xl font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center tracking-wide bg-aura-400 text-zinc-950 hover:bg-aura-300 border border-aura-400/30 shadow-[0_0_28px_rgba(212,165,116,0.12)]";
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] py-10 px-5 relative z-10 w-full">
-      <div className="w-full max-w-sm flex flex-col gap-6 p-8 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] mx-auto">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Create Account</h2>
-          <p className="text-cyan-400/80 text-sm font-medium tracking-wide uppercase">Join our platform today</p>
+    <>
+      <Navbar />
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] py-10 px-5 relative z-10 w-full">
+        <div className="w-full max-w-sm flex flex-col gap-6 p-8 rounded-3xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] shadow-[0_12px_48px_rgba(0,0,0,0.35)] mx-auto">
+          <div className="text-center">
+            <p className="font-display text-xs uppercase tracking-[0.35em] text-aura-400/90 mb-2">aura.</p>
+            <h2 className="text-2xl font-display font-semibold text-zinc-100 mb-2 tracking-tight">Create account</h2>
+            <p className="text-zinc-500 text-sm font-medium tracking-wide">Join Aura to save your sessions</p>
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm text-center backdrop-blur-md">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div className="w-full">
+              <label className={labelClasses}>Username</label>
+              <input
+                type="text"
+                name="username"
+                placeholder="Choose a username"
+                value={formData.username}
+                onChange={handleChange}
+                className={inputClasses}
+                required
+              />
+            </div>
+
+            <div className="w-full">
+              <label className={labelClasses}>Password</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Create a strong password"
+                value={formData.password}
+                onChange={handleChange}
+                className={inputClasses}
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={isLoading} className={`${btnClasses} mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
+              {isLoading ? 'Creating account…' : 'Create account'}
+            </button>
+          </form>
+
+          <p className="text-center text-zinc-500 text-sm mt-2">
+            Already have an account?{' '}
+            <Link to="/login" className="text-aura-400 hover:text-aura-300 transition-colors font-medium">
+              Sign in
+            </Link>
+          </p>
         </div>
-
-        {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm text-center backdrop-blur-md">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div className="w-full">
-            <label className={labelClasses}>Username</label>
-            <input
-              type="text"
-              name="username"
-              placeholder="Choose a username"
-              value={formData.username}
-              onChange={handleChange}
-              className={inputClasses}
-              required
-            />
-          </div>
-
-          <div className="w-full">
-            <label className={labelClasses}>Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Create a strong password"
-              value={formData.password}
-              onChange={handleChange}
-              className={inputClasses}
-              required
-            />
-          </div>
-
-          <button type="submit" disabled={isLoading} className={`${btnClasses} mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
-            {isLoading ? 'Creating account...' : 'Register'}
-          </button>
-        </form>
-
-        <p className="text-center text-slate-400 text-sm mt-2">
-          Already have an account?{' '}
-          <Link to="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors font-semibold">
-            Login here
-          </Link>
-        </p>
       </div>
-    </div>
+    </>
   );
 }
