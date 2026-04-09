@@ -27,8 +27,7 @@ const cueSong = async (roomId, videoId) => {
         const { default: YTMusic } = await import("ytmusic-api");
         const ytmusic = new YTMusic();
         await ytmusic.initialize();
-        console.log(videoId);
-        const data = await ytmusic.getSong(videoId);
+        const data = await ytmusic.getSong(String(videoId));
         const cueKey = `room:${roomId}:cue`;
         await redisClient.rPush(cueKey, JSON.stringify(data));
         await redisClient.expire(cueKey, 60 * 60);
