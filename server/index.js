@@ -7,6 +7,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./.env" });
 
+const app = express();
 app.use(cors({
   origin: process.env.CLIENT_URL,
   credentials: true
@@ -26,7 +27,6 @@ initDb();
 connectRedis();
 connectIO(io);
 
-const app = express();
 const cookieParser = require("cookie-parser");
 
 app.use(express.json());

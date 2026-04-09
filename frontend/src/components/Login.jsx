@@ -100,7 +100,7 @@ export default function Login() {
             <div className="h-px bg-white/[0.08] flex-1"></div>
           </div>
 
-          <a href="http://localhost:8000/api/auth/google" className="w-full h-12 px-6 rounded-xl font-medium transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 tracking-wide bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.15]">
+          <a href="tps://aura-backend-ebam.onrender.com::8000/api/auth/google" className="w-full h-12 px-6 rounded-xl font-medium transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 tracking-wide bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.15]">
             <FcGoogle className="text-xl" />
             Continue with Google
           </a>

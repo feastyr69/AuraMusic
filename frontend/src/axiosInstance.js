@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const apiBaseURL = axios.create({
-  baseURL: "https://aura-backend-ebam.onrender.com:8000/api",
+  baseURL: "https://aura-backend-ebam.onrender.com/api",
   withCredentials: true
 });
 
