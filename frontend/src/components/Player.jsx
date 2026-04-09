@@ -21,6 +21,7 @@ export default function Player({ roomId, userName, socket }) {
     const isPlayingRef = useRef(isPlaying);
     const currentSongRef = useRef(currentSong);
     const isPlayerReadyRef = useRef(isPlayerReady);
+    const loadedVideoIdRef = useRef(null);
 
     useEffect(() => {
         isPlayingRef.current = isPlaying;
@@ -162,11 +163,12 @@ export default function Player({ roomId, userName, socket }) {
             if (!data) {
                 setCurrentSong(null);
                 if (isPlayerReadyRef.current) playerRef.current?.cueVideoById?.({ videoId: "" });
+                loadedVideoIdRef.current = null;
                 return;
             }
             if (currentSongRef.current?.videoId !== data.videoId) {
                 setCurrentSong(data);
-                if (isPlayerReadyRef.current) playerRef.current?.loadVideoById?.(data.videoId);
+                // Let receive-sync-song handle the actual loadVideoById so it maps the startSeconds correctly
             }
         })
 
@@ -178,19 +180,12 @@ export default function Player({ roomId, userName, socket }) {
             const latencyOffset = (timestamp && syncIsPlaying) ? (Date.now() - timestamp) / 1000 : 0;
             const syncProgress = (data.progress || 0) + latencyOffset;
 
-            // no song yet (initial join) 
-            if (!currentSongRef.current) {
-                if (songData) setCurrentSong(songData);
+            // Needs loading?
+            if (videoId !== loadedVideoIdRef.current) {
                 if (isPlayerReadyRef.current) {
                     playerRef.current?.loadVideoById?.({ videoId, startSeconds: syncProgress });
+                    loadedVideoIdRef.current = videoId;
                 }
-                setIsPlaying(syncIsPlaying);
-                return;
-            }
-
-            // different song 
-            if (videoId !== currentSongRef.current.videoId) {
-                if (isPlayerReadyRef.current) playerRef.current?.loadVideoById?.({ videoId, startSeconds: syncProgress });
                 if (songData) setCurrentSong(songData);
                 setProgress(syncProgress);
                 setIsPlaying(syncIsPlaying);
