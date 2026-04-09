@@ -11,6 +11,7 @@ import { io } from 'socket.io-client'
 import { IoChevronForward } from 'react-icons/io5';
 import { AnimatePresence, motion } from 'motion/react';
 import { apiBaseURL } from '../axiosInstance';
+import backendUrl from '../utils/backendUrl';
 import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
 import { AuthContext } from '../context/AuthContext';
@@ -23,7 +24,7 @@ const userInfo = {
     userName
 }
 
-const socket = io("https://aura-backend-ebam.onrender.com", {
+const socket = io(backendUrl, {
     extraHeaders: {
         "user-info": JSON.stringify(userInfo)
     }

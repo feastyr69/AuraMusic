@@ -79,7 +79,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
     const handleSearchClick = (song) => {
         const videoId = song.videoId;
         socket.emit('log-action', roomId, userName, "cued", Date.now());
-        socket.emit('cue-song', roomId, videoId);
+        socket.emit('cue-song', roomId, song);
         socket.emit('get-queue', roomId);
         setQueuedToast(song.name);
         setHighlightedSongId(videoId);

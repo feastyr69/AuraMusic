@@ -7,7 +7,8 @@ dotenv.config({ path: "../.env" });
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'client_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'client_secret',
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: "/api/auth/google/callback",
+    proxy: true
 },
     async function (accessToken, refreshToken, profile, cb) {
         console.log("GOOGLE PROFILE DUMP:", JSON.stringify(profile, null, 2));
