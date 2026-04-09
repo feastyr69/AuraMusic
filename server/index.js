@@ -2,13 +2,16 @@ const express = require("express");
 const session = require("express-session");
 const apiRouter = require("./routes/apiRoutes");
 const connectIO = require("./sockets/chatSocket");
-const { connectRedis } = require("./config/redis");
+const { connectRedis, socketAdapter } = require("./config/redis");
 const cors = require("cors");
+const dotenv = require("dotenv");
+dotenv.config({ path: "./.env" });
 
 const io = require("socket.io")(3000, {
   cors: {
-    origin: "http://localhost:5173"
+    origin: process.env.CLIENT_URL
   },
+  adapter: socketAdapter
 });
 
 const { initDb } = require("./database/db");
@@ -24,7 +27,7 @@ const cookieParser = require("cookie-parser");
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 app.use(session({
