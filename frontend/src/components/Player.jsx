@@ -3,7 +3,7 @@ import YouTube from 'react-youtube';
 import { IoPlay, IoPause, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh } from 'react-icons/io5';
 import { PiVinylRecordLight } from 'react-icons/pi';
 
-export default function Player({ roomId, sessionId, userName, socket }) {
+export default function Player({ roomId, userName, socket }) {
 
 
     const [rotation, setRotation] = useState({ x: 0, y: 0 });
@@ -106,6 +106,7 @@ export default function Player({ roomId, sessionId, userName, socket }) {
 
     const handleNext = () => {
         if (currentSongRef.current?.duration) {
+            socket.emit('log-action', roomId, userName, "skipped", Date.now());
             const sec = { target: { value: currentSongRef.current?.duration } };
             handleSeek(sec);
         }
@@ -127,14 +128,6 @@ export default function Player({ roomId, sessionId, userName, socket }) {
         if (event.data === 3) setIsBuffering(true);
         else setIsBuffering(false);
     }
-
-    window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.key === ' ') {
-            e.preventDefault();
-            handlePlayPause();
-        }
-    })
 
     useEffect(() => {
         if (!isPlayerReady) return;
@@ -168,7 +161,7 @@ export default function Player({ roomId, sessionId, userName, socket }) {
 
         socket.on('receive-sync-song', (data) => {
             console.log("receive-sync-song", data);
-            const { videoId, isPlaying: syncIsPlaying, progress: syncProgress, duration: syncDuration, songData } = data;
+            const { videoId, isPlaying: syncIsPlaying, progress: syncProgress, songData } = data;
             // no song yet (initial join) 
             if (!currentSongRef.current) {
                 if (songData) setCurrentSong(songData);
@@ -217,7 +210,6 @@ export default function Player({ roomId, sessionId, userName, socket }) {
                     clearInterval(progressInterval.current);
                     setIsPlaying(false);
                     socket.emit('next-song', roomId, currentSong.videoId);
-                    socket.emit('log-action', roomId, userName, "skipped", Date.now());
                 }
             }, 1000);
         } else {

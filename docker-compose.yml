@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:alpine
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432 # make sure you don't have another container running on DB_PORT
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${DB_NAME} -U $${DB_USER}" ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    volumes:
+      - ./data/db:/var/lib/postgresql
+    attach: false
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    attach: false

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiBaseURL } from '../axiosInstance';
 import Navbar from './Navbar';
+import { FcGoogle } from 'react-icons/fc';
 
 export default function Register() {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -19,7 +20,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await apiBaseURL.post("/register", formData);
+      const response = await apiBaseURL.post("/auth/register", formData);
       const data = response.data;
 
       if (data.status) {
@@ -89,6 +90,17 @@ export default function Register() {
               {isLoading ? 'Creating account…' : 'Create account'}
             </button>
           </form>
+
+          <div className="flex items-center gap-4 my-2">
+            <div className="h-px bg-white/[0.08] flex-1"></div>
+            <span className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Or</span>
+            <div className="h-px bg-white/[0.08] flex-1"></div>
+          </div>
+          
+          <a href="http://localhost:8000/api/auth/google" className="w-full h-12 px-6 rounded-xl font-medium transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 tracking-wide bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.15]">
+            <FcGoogle className="text-xl" />
+            Continue with Google
+          </a>
 
           <p className="text-center text-zinc-500 text-sm mt-2">
             Already have an account?{' '}

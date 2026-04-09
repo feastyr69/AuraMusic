@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { IoIosArrowRoundForward } from "react-icons/io";
 
@@ -20,10 +20,10 @@ export default function Hero() {
 
     return (
         <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-8 md:mt-12 relative z-10">
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.1] bg-zinc-950/50 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_32px_80px_-24px_rgba(0,0,0,0.8),0_0_100px_-30px_rgba(212,165,116,0.18)]">
+            <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-zinc-950/50 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_32px_80px_-24px_rgba(0,0,0,0.8),0_0_100px_-30px_rgba(212,165,116,0.18)]">
                 {/* Animated aurora blobs */}
                 <div
-                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-[2rem]"
+                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-4xl"
                     aria-hidden
                 >
                     <motion.div
@@ -45,7 +45,7 @@ export default function Hero() {
                         transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 2 }}
                     />
                     <motion.div
-                        className="absolute -bottom-[15%] left-[25%] h-[min(340px,45vw)] w-[min(340px,45vw)] rounded-full bg-cyan-500/[0.12] blur-[85px]"
+                        className="absolute -bottom-[15%] left-[25%] h-[min(340px,45vw)] w-[min(340px,45vw)] rounded-full bg-cyan-500/12 blur-[85px]"
                         animate={{
                             x: [0, -30, 35, 0],
                             y: [0, 25, -20, 0],
@@ -67,7 +67,7 @@ export default function Hero() {
                     <div className="absolute inset-0 hero-panel-shine opacity-60 mix-blend-overlay" />
 
                     {/* Bottom edge fade into page */}
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-zinc-950/90 to-transparent rounded-b-[2rem]" />
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-zinc-950/90 to-transparent rounded-b-4xl" />
                 </div>
 
                 <div className="relative z-10 flex flex-col gap-10 justify-center items-center px-6 sm:px-10 lg:px-14 pt-14 pb-16 md:pt-18 md:pb-22 text-center">
@@ -111,7 +111,7 @@ export default function Hero() {
                             </Link>
                             <Link
                                 to="/register"
-                                className="inline-flex items-center justify-center rounded-full px-6 py-3 border border-white/15 text-zinc-100 font-medium text-sm bg-white/[0.04] hover:border-aura-400/45 hover:bg-white/[0.07] transition-colors w-full sm:w-auto backdrop-blur-sm"
+                                className="inline-flex items-center justify-center rounded-full px-6 py-3 border border-white/15 text-zinc-100 font-medium text-sm bg-white/4 hover:border-aura-400/45 hover:bg-white/7 transition-colors w-full sm:w-auto backdrop-blur-sm"
                             >
                                 Create an account
                             </Link>

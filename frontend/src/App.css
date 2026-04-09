@@ -27,14 +27,21 @@
     font-family: var(--font-sans);
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
+
 
   body {
     @apply m-0 p-0 box-border text-zinc-200;
     background-color: #000000;
+    overflow-x: hidden;
+  }
 
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -2;
+    transform: translateZ(0);
     background-image:
       radial-gradient(ellipse 135% 100% at 50% 28%,
         transparent 0%,
@@ -59,27 +66,15 @@
         #0a0a0c 0%,
         var(--color-aura-bg) 42%,
         #000000 100%);
-    background-attachment: fixed;
-    overflow-x: hidden;
   }
 
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.2;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
-    z-index: 0;
-  }
 
   #root {
     position: relative;
     z-index: 1;
   }
 }
+
 
 @layer utilities {
   .font-display {

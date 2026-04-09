@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { apiBaseURL } from '../axiosInstance';
 import { FaSearch } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 export default function Queue({ roomId, sessionId, userName, socket }) {
     const [rotation, setRotation] = useState({ x: 0, y: -15 });
@@ -9,6 +9,8 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
     const [queue, setQueue] = useState([]);
     const [isFocused, setIsFocused] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [queuedToast, setQueuedToast] = useState(null);
+    const [highlightedSongId, setHighlightedSongId] = useState(null);
 
     const cardRef = useRef(null);
 
@@ -73,11 +75,28 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
         }
     }, [roomId])
 
-    const handleSearchClick = (videoId) => {
+    const handleSearchClick = (song) => {
+        const videoId = song.videoId;
         socket.emit('log-action', roomId, userName, "cued", Date.now());
         socket.emit('cue-song', roomId, videoId);
         socket.emit('get-queue', roomId);
+        setQueuedToast(song.name);
+        setHighlightedSongId(videoId);
+        setSearchResults([]);
+        setIsFocused(false);
     }
+
+    useEffect(() => {
+        if (!queuedToast) return undefined;
+        const timer = setTimeout(() => setQueuedToast(null), 1400);
+        return () => clearTimeout(timer);
+    }, [queuedToast]);
+
+    useEffect(() => {
+        if (!highlightedSongId) return undefined;
+        const timer = setTimeout(() => setHighlightedSongId(null), 1200);
+        return () => clearTimeout(timer);
+    }, [highlightedSongId]);
 
     return (
         <>
@@ -90,14 +109,28 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-80 h-120 p-5 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/[0.04] backdrop-blur-xl border border-white/[0.1]'>
+                className='flex flex-col w-80 h-120 p-5 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/4 backdrop-blur-xl border border-white/10'>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Add to queue</p>
                 <div className='relative w-full h-full'>
+                    <AnimatePresence>
+                        {queuedToast && (
+                            <motion.div
+                                key="queued-toast"
+                                className="absolute top-0 right-0 z-60 rounded-lg border border-aura-400/40 bg-zinc-950/95 px-3 py-2 text-xs text-aura-300 shadow-lg"
+                                initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                Queued: {queuedToast.length > 24 ? `${queuedToast.slice(0, 24)}...` : queuedToast}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                     <div className='flex flex-row w-full items-center relative'>
                         <input
                             type="text"
                             placeholder='Search for a song'
-                            className='w-full p-2.5 my-1 text-sm rounded-xl border border-white/[0.1] pr-10 bg-white/[0.03] outline-none focus:border-aura-400/40 text-zinc-200 placeholder:text-zinc-500'
+                            className='w-full p-2.5 my-1 text-sm rounded-xl border border-white/10 pr-10 bg-white/3 outline-none focus:border-aura-400/40 text-zinc-200 placeholder:text-zinc-500'
                             onChange={handleSearchInput}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
@@ -106,7 +139,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     </div>
 
                     {isFocused && (isSearching || searchResults.length > 0) && (
-                        <div className='absolute top-12 left-0 w-full flex flex-col mt-2 bg-zinc-950/95 border border-white/[0.1] backdrop-blur-xl p-2 px-3 rounded-xl z-50 shadow-xl'>
+                        <div className='absolute top-12 h-80 overflow-y-auto left-0 w-full flex flex-col mt-2 bg-zinc-950/95 border border-white/10 backdrop-blur-xl p-2 px-3 rounded-xl z-50 shadow-xl scrollbar'>
                             {isSearching ? (
                                 <div className="flex flex-col gap-2 p-1">
                                     {[1, 2, 3, 4, 5].map(i => (
@@ -120,15 +153,20 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                     ))}
                                 </div>
                             ) : searchResults.map((song, index) => {
-                                if (index > 5) return null;
                                 return (
-                                    <div key={index} className='flex flex-row w-full items-center mb-1 p-1 hover:bg-white/10 rounded-lg hover:cursor-pointer transition duration-300' onMouseDown={() => handleSearchClick(song.videoId)}>
-                                        <img src={`https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0 mr-3" />
+                                    <motion.div
+                                        key={index}
+                                        className='flex flex-row w-full items-center mb-1 p-1 hover:bg-white/10 rounded-lg hover:cursor-pointer transition duration-300'
+                                        onMouseDown={() => handleSearchClick(song)}
+                                        whileHover={{ x: 2 }}
+                                        whileTap={{ scale: 0.99 }}
+                                    >
+                                        <img src={`https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`} alt="" className="w-10 h-10 object-cover rounded-md shrink-0 mr-3" />
                                         <div className='flex-1 min-w-0'>
                                             <p className='text-sm truncate whitespace-nowrap'>{song.name}</p>
                                             <p className='text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )
                             })}
                         </div>
@@ -136,7 +174,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
 
                     <div className='flex flex-col w-full h-full p-2'>
                         <p className='text-[10px] uppercase tracking-[0.2em] mt-3 text-zinc-500 font-medium'>Up next</p>
-                        <div className='flex flex-col w-full h-[80%] mt-2 rounded-xl border border-white/[0.08] overflow-y-auto scrollbar snap-y bg-white/[0.02]'>
+                        <div className='flex flex-col w-full h-[80%] mt-2 rounded-xl border border-white/8 overflow-y-auto scrollbar snap-y bg-white/2'>
                             {
                                 queue.length === 0 ? (
                                     <div className='flex flex-col gap-2 items-center justify-center h-full'>
@@ -148,8 +186,14 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                     </div>
                                 ) : queue.map((song, index) => {
                                     return (
-                                        <div key={index} className={`flex flex-row w-full items-center mb-1 p-1 hover:bg-white/[0.06] rounded-lg hover:cursor-pointer transition duration-300 ${index === 0 ? 'bg-white/[0.06]' : ''}`}>
-                                            <div className="relative w-10 h-10 flex-shrink-0 mr-3">
+                                        <motion.div
+                                            key={`${song.videoId}-${index}`}
+                                            className={`flex flex-row w-full items-center mb-1 p-1 hover:bg-white/6 rounded-lg hover:cursor-pointer transition duration-300 ${index === 0 ? 'bg-white/6' : ''}`}
+                                            initial={highlightedSongId === song.videoId ? { opacity: 0.7, y: 10, scale: 0.985 } : false}
+                                            animate={highlightedSongId === song.videoId ? { opacity: [0.7, 1], y: [10, 0], scale: [0.985, 1], boxShadow: ["0 0 0 rgba(212,165,116,0)", "0 0 0 1px rgba(212,165,116,0.45)", "0 0 0 rgba(212,165,116,0)"] } : { opacity: 1, y: 0, scale: 1 }}
+                                            transition={{ duration: 0.45, ease: "easeOut" }}
+                                        >
+                                            <div className="relative w-10 h-10 shrink-0 mr-3">
                                                 <img src={`https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`} alt="" className="w-10 h-10 object-cover rounded-md" />
                                                 {index === 0 && (
                                                     <div className="absolute inset-0 bg-black/40 rounded-md flex items-center justify-center gap-[2px]">
@@ -175,7 +219,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                                 <p className={`text-sm ${index === 0 ? 'text-aura-400 font-medium' : 'text-zinc-200'} truncate whitespace-nowrap`}>{song.name}</p>
                                                 <p className='text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )
                                 })
                             }

@@ -9,7 +9,10 @@ const createRoom = async (req, res) =>{
             value: roomId
         });
         await redisClient.hSet(`room:${roomId}:info`, {
-            createdAt: Date.now()
+            roomId: roomId,
+            createdAt: Date.now(),
+            type: "public",
+            
         });
         await redisClient.expire(`room:${roomId}:info`, 60 * 60);
         console.log("Creating room...", roomId);
@@ -17,6 +20,25 @@ const createRoom = async (req, res) =>{
     } catch (error) {
         console.error("Error creating room:", error);
         return res.status(500).json({ status: "failed", message: "Error creating room" });
+    }
+}
+
+const getRoomInfo = async (req, res) =>{
+    try {
+        const { roomId } = req.params;
+        const roomData = await redisClient.hmGet(`room:${roomId}:info`, ["roomId", "createdAt", "type"]);
+        if(roomData[0]){
+            return res.status(200).json({
+                roomId: roomData[0], 
+                createdAt: roomData[1], 
+                type: roomData[2], 
+                success: true 
+            });
+        }
+        return res.status(200).json({ success: false });
+    } catch (error) {
+        console.error("Error checking room:", error);
+        return res.status(500).json({ status: "failed", message: "Error checking room" });
     }
 }
 
@@ -43,4 +65,4 @@ const saveMessage = async (roomId, message,sender) =>{
     }
 }
 
-module.exports = {createRoom, getRoomHistory, saveMessage};
+module.exports = {createRoom, getRoomHistory, saveMessage, getRoomInfo};

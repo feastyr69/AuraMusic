@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiBaseURL } from '../axiosInstance';
+import { FcGoogle } from 'react-icons/fc';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,20 +22,17 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      const data = await response.json();
+      const response = await apiBaseURL.post('/auth/login', formData);
+      const data = response.data;
 
-      if (!response.ok) {
+      if (!data.status) {
         throw new Error(data.message || 'Login failed');
       }
 
-      localStorage.setItem('token', data.token);
+      await login(data.token);
       navigate('/');
     } catch (err) {
+      console.log(err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -92,6 +93,17 @@ export default function Login() {
               {isLoading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
+
+          <div className="flex items-center gap-4 my-2">
+            <div className="h-px bg-white/[0.08] flex-1"></div>
+            <span className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Or</span>
+            <div className="h-px bg-white/[0.08] flex-1"></div>
+          </div>
+
+          <a href="http://localhost:8000/api/auth/google" className="w-full h-12 px-6 rounded-xl font-medium transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 tracking-wide bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.15]">
+            <FcGoogle className="text-xl" />
+            Continue with Google
+          </a>
 
           <p className="text-center text-zinc-500 text-sm mt-2">
             Don&apos;t have an account?{' '}

@@ -1,5 +1,6 @@
 const { getRoomHistory, saveMessage } = require("../services/chatService");
 const { cueSong,getQueue,nextSong} = require("../services/ytMusic");
+const { joinUser, getUsersInRoom, removeUser } = require("../services/roomService");
 
 const skipLocks = new Map();
 
@@ -8,17 +9,28 @@ const connectIO = (io) => {
         console.log("A user connected");
 
         //user join room
-        socket.on("join-room", async (roomId,senderName,timestamp) => {
+        socket.on("join-room", async (clientData) => {
+            const { roomId, sessionId, userName, joinedAt } = clientData;
             socket.join(roomId);
+            
+            socket.roomId = roomId;
+            socket.userId = sessionId;
+            socket.userName = userName;
+            await joinUser(roomId, sessionId, userName);
+
             console.log(`User ${socket.id} joined room ${roomId}`);
-            if(!skipLocks.get(senderName+roomId)){
-                socket.to(roomId).emit("receive-message", {message: `${senderName} has joined the room`, sender: "System"});
-                await saveMessage(roomId, `${senderName} has joined the room`, "System");
+            if(!skipLocks.get(userName+roomId)){
+                socket.to(roomId).emit("receive-message", {message: `${userName} has joined the room`, sender: "System"});
+                await saveMessage(roomId, `${userName} has joined the room`, "System");
             }
-            skipLocks.set(senderName+roomId,true);
-            setTimeout(() => skipLocks.delete(senderName+roomId), 15000);
+            skipLocks.set(userName+roomId,true);
+            setTimeout(() => skipLocks.delete(userName+roomId), 15000);
+            
             const history = await getRoomHistory(roomId);
             socket.emit("room-history", history);
+
+            const users = await getUsersInRoom(roomId);
+            io.to(roomId).emit("update-users", users);
         });
 
 
@@ -83,8 +95,19 @@ const connectIO = (io) => {
         
 
         //user disconnect
-        socket.on("disconnect", () => {
-            console.log("User disconnected");
+        socket.on("disconnect", async () => {
+            console.log(`User disconnected: ${socket.userName} from ${socket.roomId}`);
+            if (socket.roomId && socket.userName) {
+                await removeUser(socket.roomId, socket.userId, socket.userName);
+                
+                const users = await getUsersInRoom(socket.roomId);
+                io.to(socket.roomId).emit("update-users", users);
+                
+                socket.to(socket.roomId).emit("receive-message", {
+                    message: `${socket.userName} has left the room`,
+                    sender: "System"
+                });
+            }
         });
 
         //user sync song

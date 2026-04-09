@@ -1,0 +1,27 @@
+Sockets connected!
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Server.attach (/run/media/feast/Main/Coding/websites/practice/server/node_modules/socket.io/dist/index.js:226:17)
+    at new Server (/run/media/feast/Main/Coding/websites/practice/server/node_modules/socket.io/dist/index.js:119:18)
+    at module.exports (/run/media/feast/Main/Coding/websites/practice/server/node_modules/socket.io/dist/index.js:815:33)
+    at Object.<anonymous> (/run/media/feast/Main/Coding/websites/practice/server/index.js:7:32)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+
+Node.js v22.22.0
