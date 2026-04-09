@@ -61,4 +61,17 @@ const nextSong = async (roomId) => {
     }
 }
 
-module.exports = {searchSong,cueSong,getQueue,nextSong};
+const removeSong = async (roomId, index) => {
+    try{
+        const cueKey = `room:${roomId}:cue`;
+        await redisClient.lSet(cueKey, index, "TO_DELETE");
+        await redisClient.lRem(cueKey, 0, "TO_DELETE");
+        const data = await getQueue(roomId);
+        return data;
+    }catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+module.exports = {searchSong,cueSong,getQueue,nextSong,removeSong};

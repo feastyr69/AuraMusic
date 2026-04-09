@@ -3,7 +3,7 @@ import { IoSend } from "react-icons/io5";
 import { AnimatePresence, motion } from 'motion/react';
 
 
-export default function Chat({ roomId, sessionId, userName, className, socket }) {
+export default function Chat({ roomId, sessionId, userName, avatarUrl, className, socket }) {
     const senderId = userName;
     const [chat, setChat] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +38,7 @@ export default function Chat({ roomId, sessionId, userName, className, socket })
 
     useEffect(() => {
         const timestamp = Date.now();
-        const clientData = { roomId, sessionId, userName, joinedAt: timestamp };
+        const clientData = { roomId, sessionId, userName, avatarUrl, joinedAt: timestamp };
         console.log(clientData);
         socket.emit('join-room', clientData);
         socket.on('room-history', (history) => {

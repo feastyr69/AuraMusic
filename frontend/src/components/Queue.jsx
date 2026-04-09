@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { apiBaseURL } from '../axiosInstance';
 import { FaSearch } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 import { AnimatePresence, motion } from 'motion/react';
 
 export default function Queue({ roomId, sessionId, userName, socket }) {
@@ -84,6 +85,11 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
         setHighlightedSongId(videoId);
         setSearchResults([]);
         setIsFocused(false);
+    }
+
+    const handleRemoveSong = (videoId, index) => {
+        socket.emit('log-action', roomId, userName, "removed", Date.now());
+        socket.emit('remove-song', roomId, index, videoId);
     }
 
     useEffect(() => {
@@ -188,7 +194,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                     return (
                                         <motion.div
                                             key={`${song.videoId}-${index}`}
-                                            className={`flex flex-row w-full items-center mb-1 p-1 hover:bg-white/6 rounded-lg hover:cursor-pointer transition duration-300 ${index === 0 ? 'bg-white/6' : ''}`}
+                                            className={`flex flex-row w-full items-center mb-1 p-1 hover:bg-white/6 rounded-lg cursor-default transition duration-300 ${index === 0 ? 'bg-white/6' : ''} group`}
                                             initial={highlightedSongId === song.videoId ? { opacity: 0.7, y: 10, scale: 0.985 } : false}
                                             animate={highlightedSongId === song.videoId ? { opacity: [0.7, 1], y: [10, 0], scale: [0.985, 1], boxShadow: ["0 0 0 rgba(212,165,116,0)", "0 0 0 1px rgba(212,165,116,0.45)", "0 0 0 rgba(212,165,116,0)"] } : { opacity: 1, y: 0, scale: 1 }}
                                             transition={{ duration: 0.45, ease: "easeOut" }}
@@ -219,6 +225,18 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                                 <p className={`text-sm ${index === 0 ? 'text-aura-400 font-medium' : 'text-zinc-200'} truncate whitespace-nowrap`}>{song.name}</p>
                                                 <p className='text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
                                             </div>
+                                            {index !== 0 && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRemoveSong(song.videoId, index);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-2 ml-1 text-zinc-400 hover:cursor-pointer hover:text-rose-400 focus:outline-none focus:opacity-100"
+                                                    aria-label="Remove song"
+                                                >
+                                                    <IoClose size={20} />
+                                                </button>
+                                            )}
                                         </motion.div>
                                     )
                                 })

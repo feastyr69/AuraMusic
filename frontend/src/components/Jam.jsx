@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import Navbar from './Navbar'
 import Chat from './Chat'
 import Player from './Player'
@@ -11,8 +11,9 @@ import { io } from 'socket.io-client'
 import { IoChevronForward } from 'react-icons/io5';
 import { AnimatePresence, motion } from 'motion/react';
 import { apiBaseURL } from '../axiosInstance';
-import { FaCheck } from 'react-icons/fa'
+import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
+import { AuthContext } from '../context/AuthContext';
 
 let sessionId = localStorage.getItem("sessionId");
 let userName = localStorage.getItem("userName");
@@ -51,6 +52,7 @@ export default function Jam() {
     const [loading, setLoading] = useState(true);
     const [roomUsers, setRoomUsers] = useState([]);
     const [inviteCopied, setInviteCopied] = useState(false);
+    const { user } = useContext(AuthContext);
 
     useEffect(() => {
         console.log("Checking room...");
@@ -59,6 +61,12 @@ export default function Jam() {
             //console.log(res.data);
             if (res.data.success) {
                 setRoomData(res.data);
+            }
+            await user;
+            if (user) {
+                console.log(user);
+                setUserName(user.google_name || user.username);
+                localStorage.setItem("userName", user.google_name || user.username);
             }
             setLoading(false);
         }
@@ -195,7 +203,7 @@ export default function Jam() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.05, duration: 0.35, ease: "easeInOut" }}
                                 >
-                                    <Chat roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
+                                    <Chat roomId={roomId} sessionId={sessionId} userName={userName} avatarUrl={user?.avatar_url} socket={socket} />
                                 </motion.div>
 
                                 <motion.div
@@ -232,17 +240,17 @@ export default function Jam() {
                                             </div>
                                         ) : (
                                             <>
-                                                {uniqueUsers.map((user, index) => (
+                                                {uniqueUsers.map((participant, index) => (
                                                     <motion.div
-                                                        key={user.userId || `${user.userName}-${index}`}
-                                                        title={user.userName}
-                                                        className='shrink-0 h-9 w-9 rounded-full bg-aura-400/85 text-zinc-950 text-xs font-semibold flex items-center justify-center border border-white/40'
+                                                        key={participant.userId || `${participant.userName}-${index}`}
+                                                        title={participant.userName}
+                                                        className='shrink-0 h-11 w-11 rounded-full bg-aura-400/85 text-zinc-950 text-xs font-semibold flex items-center justify-center border border-white/40 overflow-hidden'
                                                         initial={{ opacity: 0, x: -28 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         exit={{ opacity: 0, x: -28 }}
                                                         transition={{ delay: 0.18, duration: 0.35 }}
                                                     >
-                                                        {(user.userName || "?").slice(0, 2).toUpperCase()}
+                                                        {participant.avatarUrl ? (<img className="w-full h-full object-cover rounded-full" src={participant.avatarUrl} alt={participant.userName} />) : (participant.userName || "?").slice(0, 2).toUpperCase()}
                                                     </motion.div>
                                                 ))}
                                             </>

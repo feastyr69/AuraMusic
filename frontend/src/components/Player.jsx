@@ -16,6 +16,7 @@ export default function Player({ roomId, userName, socket }) {
     const [currentSong, setCurrentSong] = useState(null);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [isBuffering, setIsBuffering] = useState(false);
+    const [isPlayPauseDisabled, setIsPlayPauseDisabled] = useState(false);
 
     const isPlayingRef = useRef(isPlaying);
     const currentSongRef = useRef(currentSong);
@@ -83,11 +84,16 @@ export default function Player({ roomId, userName, socket }) {
             videoId: currentSongRef.current?.videoId,
             isPlaying: isPlayingRef.current,
             progress: newProgress,
-            duration: currentSongRef.current?.duration
+            duration: currentSongRef.current?.duration,
+            timestamp: Date.now()
         });
     }
 
     const handlePlayPause = () => {
+        if (isPlayPauseDisabled) return;
+        setIsPlayPauseDisabled(true);
+        setTimeout(() => setIsPlayPauseDisabled(false), 600); // 600ms rate limit
+
         const newState = !isPlaying;
         if (newState) {
             handlePlay();
@@ -100,7 +106,8 @@ export default function Player({ roomId, userName, socket }) {
             videoId: currentSong?.videoId,
             isPlaying: newState,
             progress: currentSec,
-            duration: currentSong?.duration
+            duration: currentSong?.duration,
+            timestamp: Date.now()
         });
     }
 
@@ -142,9 +149,10 @@ export default function Player({ roomId, userName, socket }) {
                 socket.emit('sync-song', roomId, {
                     videoId: currentSongRef.current.videoId,
                     isPlaying: isPlayingRef.current,
-                    progress: currentSec + 1,
+                    progress: currentSec,
                     duration: currentSongRef.current.duration,
-                    songData: currentSongRef.current
+                    songData: currentSongRef.current,
+                    timestamp: Date.now()
                 });
             }
         });
@@ -161,7 +169,12 @@ export default function Player({ roomId, userName, socket }) {
 
         socket.on('receive-sync-song', (data) => {
             console.log("receive-sync-song", data);
-            const { videoId, isPlaying: syncIsPlaying, progress: syncProgress, songData } = data;
+            const { videoId, isPlaying: syncIsPlaying, songData, timestamp } = data;
+            
+            // Calculate latency offset gracefully (in seconds)
+            const latencyOffset = (timestamp && syncIsPlaying) ? (Date.now() - timestamp) / 1000 : 0;
+            const syncProgress = (data.progress || 0) + latencyOffset;
+
             // no song yet (initial join) 
             if (!currentSongRef.current) {
                 if (songData) setCurrentSong(songData);
@@ -351,7 +364,8 @@ export default function Player({ roomId, userName, socket }) {
 
                             <button
                                 type="button"
-                                className="w-16 h-16 flex items-center justify-center bg-aura-400 text-zinc-950 rounded-full hover:scale-105 hover:bg-aura-300 transition shadow-[0_0_28px_rgba(212,165,116,0.25)]"
+                                disabled={isPlayPauseDisabled}
+                                className={`w-16 h-16 flex items-center justify-center bg-aura-400 text-zinc-950 rounded-full transition shadow-[0_0_28px_rgba(212,165,116,0.25)] ${isPlayPauseDisabled ? 'opacity-60 cursor-not-allowed scale-95' : 'hover:scale-105 hover:bg-aura-300'}`}
                                 onClick={handlePlayPause}
                                 aria-label={isPlaying ? 'Pause' : 'Play'}
                             >

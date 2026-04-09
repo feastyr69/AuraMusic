@@ -21,6 +21,7 @@ const initDb = async () => {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
             ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255);
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS google_name VARCHAR(255);
         `);
         console.log("Database tables initialized.");
     } catch (err) {

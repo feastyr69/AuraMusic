@@ -1,11 +1,13 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { IoIosArrowRoundForward } from "react-icons/io";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Hero() {
     const [titleNumber, setTitleNumber] = useState(0);
     const titles = useMemo(() => ["Listen", "Sync", "Share"], []);
+    const { user } = useContext(AuthContext);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -109,12 +111,16 @@ export default function Hero() {
                                 Start a room
                                 <IoIosArrowRoundForward className="size-7 shrink-0" aria-hidden />
                             </Link>
-                            <Link
-                                to="/register"
-                                className="inline-flex items-center justify-center rounded-full px-6 py-3 border border-white/15 text-zinc-100 font-medium text-sm bg-white/4 hover:border-aura-400/45 hover:bg-white/7 transition-colors w-full sm:w-auto backdrop-blur-sm"
-                            >
-                                Create an account
-                            </Link>
+                            {user ? (
+                                <></>
+                            ) : (
+                                <Link
+                                    to="/register"
+                                    className="inline-flex items-center justify-center rounded-full px-6 py-3 border border-white/15 text-zinc-100 font-medium text-sm bg-white/4 hover:border-aura-400/45 hover:bg-white/7 transition-colors w-full sm:w-auto backdrop-blur-sm"
+                                >
+                                    Create an account
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>

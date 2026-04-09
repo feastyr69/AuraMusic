@@ -54,7 +54,7 @@ const login = async (req, res) => {
             return res.status(200).json({ status: false, message: "Invalid credentials" });
         }
 
-        const { accessToken, refreshToken } = generateTokens({ id: user.rows[0].id, username: user.rows[0].username, avatar_url: user.rows[0].avatar_url });
+        const { accessToken, refreshToken } = generateTokens({ id: user.rows[0].id, username: user.rows[0].username, avatar_url: user.rows[0].avatar_url, google_name: user.rows[0].google_name });
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
@@ -75,7 +75,7 @@ const googleCallback = (req, res) => {
         return res.redirect('http://localhost:5173/login?error=Authentication%20failed');
     }
 
-    const { accessToken, refreshToken } = generateTokens({ id: req.user.id, username: req.user.username, avatar_url: req.user.avatar_url });
+    const { accessToken, refreshToken } = generateTokens({ id: req.user.id, username: req.user.username, avatar_url: req.user.avatar_url, google_name: req.user.google_name });
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
@@ -95,13 +95,13 @@ const refresh = async (req, res) => {
 
     try {
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret');
-        const userRes = await db.query('SELECT id, username, google_id, created_at, avatar_url FROM users WHERE id = $1', [decoded.id]);
+        const userRes = await db.query('SELECT id, username, google_id, created_at, avatar_url, google_name FROM users WHERE id = $1', [decoded.id]);
 
         if (userRes.rows.length === 0) {
             return res.status(401).json({ success: false, message: "Invalid user" });
         }
 
-        const { accessToken } = generateTokens({ id: userRes.rows[0].id, username: userRes.rows[0].username, avatar_url: userRes.rows[0].avatar_url });
+        const { accessToken } = generateTokens({ id: userRes.rows[0].id, username: userRes.rows[0].username, avatar_url: userRes.rows[0].avatar_url, google_name: userRes.rows[0].google_name });
 
         res.json({
             success: true,
@@ -125,7 +125,7 @@ const checkStatus = async (req, res) => {
         const token = authHeader.split(' ')[1];
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-            const userRes = await db.query('SELECT id, username, google_id, created_at, avatar_url FROM users WHERE id = $1', [decoded.id]);
+            const userRes = await db.query('SELECT id, username, google_id, created_at, avatar_url, google_name FROM users WHERE id = $1', [decoded.id]);
             if (userRes.rows.length > 0) {
                 return res.json({
                     success: true,
