@@ -135,6 +135,10 @@ export default function Player({ roomId, userName, socket }) {
     const handleStateChange = (event) => {
         if (event.data === 3) setIsBuffering(true);
         else setIsBuffering(false);
+
+        // Sync React state if the browser blocks Autoplay or the user pauses manually
+        if (event.data === 1) setIsPlaying(true);
+        if (event.data === 2) setIsPlaying(false);
     }
 
     useEffect(() => {
