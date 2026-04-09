@@ -161,10 +161,13 @@ export default function Player({ roomId, userName, socket }) {
             console.log('song came', data);
             if (!data) {
                 setCurrentSong(null);
-                playerRef.current.cueVideoById({ videoId: "" });
+                if (isPlayerReadyRef.current) playerRef.current?.cueVideoById?.({ videoId: "" });
                 return;
             }
-            if (currentSongRef.current?.videoId !== data.videoId) setCurrentSong(data);
+            if (currentSongRef.current?.videoId !== data.videoId) {
+                setCurrentSong(data);
+                if (isPlayerReadyRef.current) playerRef.current?.loadVideoById?.(data.videoId);
+            }
         })
 
         socket.on('receive-sync-song', (data) => {
@@ -179,7 +182,7 @@ export default function Player({ roomId, userName, socket }) {
             if (!currentSongRef.current) {
                 if (songData) setCurrentSong(songData);
                 if (isPlayerReadyRef.current) {
-                    playerRef.current.loadVideoById({ videoId, startSeconds: syncProgress });
+                    playerRef.current?.loadVideoById?.({ videoId, startSeconds: syncProgress });
                 }
                 setIsPlaying(syncIsPlaying);
                 return;
@@ -187,8 +190,8 @@ export default function Player({ roomId, userName, socket }) {
 
             // different song 
             if (videoId !== currentSongRef.current.videoId) {
-                if (isPlayerReadyRef.current) playerRef.current.loadVideoById(videoId);
-                currentSongRef.current = data;
+                if (isPlayerReadyRef.current) playerRef.current?.loadVideoById?.({ videoId, startSeconds: syncProgress });
+                if (songData) setCurrentSong(songData);
                 setProgress(syncProgress);
                 setIsPlaying(syncIsPlaying);
                 return;
@@ -197,11 +200,11 @@ export default function Player({ roomId, userName, socket }) {
             // same song 
             const currentSec = playerRef.current?.getCurrentTime?.() ?? 0;
             if (syncProgress !== undefined && Math.abs(currentSec - syncProgress) > 1) {
-                playerRef.current?.seekTo(syncProgress);
+                playerRef.current?.seekTo?.(syncProgress);
                 setProgress(syncProgress);
             }
             if (syncIsPlaying !== undefined && syncIsPlaying !== isPlayingRef.current) {
-                syncIsPlaying ? playerRef.current?.playVideo() : playerRef.current?.pauseVideo();
+                syncIsPlaying ? playerRef.current?.playVideo?.() : playerRef.current?.pauseVideo?.();
                 setIsPlaying(syncIsPlaying);
             }
         })
