@@ -72,7 +72,7 @@ const login = async (req, res) => {
 
 const googleCallback = (req, res) => {
     if (!req.user) {
-        return res.redirect('http://localhost:5173/login?error=Authentication%20failed');
+        return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=Authentication%20failed`);
     }
 
     const { accessToken, refreshToken } = generateTokens({ id: req.user.id, username: req.user.username, avatar_url: req.user.avatar_url, google_name: req.user.google_name });
@@ -84,7 +84,7 @@ const googleCallback = (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.redirect(`http://localhost:5173/auth/callback?token=${accessToken}`);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/callback?token=${accessToken}`);
 };
 
 const refresh = async (req, res) => {

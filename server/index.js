@@ -12,14 +12,21 @@ dotenv.config({ path: "./.env" });
 const app = express();
 const httpServer = createServer(app);
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "https://aura-backend-ebam.onrender.com"
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: allowedOrigins,
   credentials: true
 }));
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL
+    origin: allowedOrigins,
+    credentials: true
   },
   adapter: socketAdapter
 });
@@ -60,6 +67,6 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api", apiRouter);
 
-app.listen(8000, () => {
+httpServer.listen(8000, () => {
   console.log("Server is running on port 8000");
 });
