@@ -23,7 +23,7 @@ const userInfo = {
     userName
 }
 
-const socket = io("http://localhost:3000", {
+const socket = io("https://aura-backend-ebam.onrender.com:3000", {
     extraHeaders: {
         "user-info": JSON.stringify(userInfo)
     }
