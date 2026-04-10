@@ -28,8 +28,8 @@ const socket = io(backendUrl, {
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,
-    pingInterval: 10000,
-    pingTimeout: 5000,
+    pingInterval: 5000,
+    pingTimeout: 10000,
     extraHeaders: {
         "user-info": JSON.stringify(userInfo)
     }

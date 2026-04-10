@@ -85,18 +85,7 @@ const googleCallback = (req, res) => {
 
     res.cookie('refreshToken', refreshToken, getCookieConfig());
 
-    // Browsers natively drop cross-origin cookies on 302 Redirects for security reasons.
-    // Instead of res.redirect, we respond with a 200 OK HTML document that manually runs the redirect.
-    const frontendTarget = `${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/callback?token=${accessToken}`;
-    res.send(`
-        <html>
-            <body>
-                <script>
-                    window.location.href = "${frontendTarget}";
-                </script>
-            </body>
-        </html>
-    `);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/callback?token=${accessToken}`);
 };
 
 const refresh = async (req, res) => {
