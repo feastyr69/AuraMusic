@@ -59,7 +59,7 @@ const login = async (req, res) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
@@ -80,7 +80,7 @@ const googleCallback = (req, res) => {
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -109,13 +109,13 @@ const refresh = async (req, res) => {
             user: userRes.rows[0]
         });
     } catch (err) {
-        res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'lax' });
+        res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
         return res.status(403).json({ success: false, message: "Invalid refresh token" });
     }
 };
 
 const logout = (req, res) => {
-    res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'lax' });
+    res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
     res.json({ success: true, message: "Logged out successfully" });
 };
 
