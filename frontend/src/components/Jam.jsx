@@ -58,7 +58,12 @@ export default function Jam() {
     const [loading, setLoading] = useState(true);
     const [roomUsers, setRoomUsers] = useState([]);
     const [inviteCopied, setInviteCopied] = useState(false);
+    const [activeTab, setActiveTab] = useState(1); // 0=Chat, 1=Player, 2=Queue
     const { user } = useContext(AuthContext);
+    const scrollContainerRef = useRef(null);
+    const chatRef = useRef(null);
+    const playerRef = useRef(null);
+    const queueRef = useRef(null);
 
     useEffect(() => {
         console.log("Checking room...");
@@ -79,6 +84,19 @@ export default function Jam() {
         checkRoom();
 
     }, [roomId])
+
+    useEffect(() => {
+        const sectionRefs = [chatRef, playerRef, queueRef];
+        const observers = sectionRefs.map((ref, idx) => {
+            const obs = new IntersectionObserver(
+                ([entry]) => { if (entry.isIntersecting) setActiveTab(idx); },
+                { root: scrollContainerRef.current, threshold: 0.55 }
+            );
+            if (ref.current) obs.observe(ref.current);
+            return obs;
+        });
+        return () => observers.forEach(obs => obs.disconnect());
+    }, [showPlayer]);
 
     useEffect(() => {
         const handleUpdateUsers = (users = []) => {
@@ -195,15 +213,38 @@ export default function Jam() {
                         </div>
                     ) : (
                         <div className='flex flex-col w-full items-center'>
+                            {/* Mobile-only tab navigator */}
+                            <div className="xl:hidden flex items-center gap-3 mt-6 mb-2 px-4 py-1 rounded-full border border-white/10 bg-white/4 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                                {["Chat", "Player", "Queue"].map((label, idx) => (
+                                    <button
+                                        key={label}
+                                        type="button"
+                                        onClick={() => {
+                                            const refs = [chatRef, playerRef, queueRef];
+                                            refs[idx].current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                                        }}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-200 ${activeTab === idx
+                                            ? "bg-aura-400/15 text-aura-400 border border-aura-400/40"
+                                            : "text-zinc-500 hover:text-zinc-300"
+                                            }`}
+                                    >
+                                        <span className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${activeTab === idx ? "bg-aura-400" : "bg-zinc-600"
+                                            }`} />
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
                             <motion.div
                                 key="room-content"
-                                className="flex flex-row w-full items-center justify-start xl:justify-center mt-4 p-10 overflow-x-auto overflow-y-clip snap-x snap-mandatory gap-4 no-scrollbar "
+                                ref={scrollContainerRef}
+                                className="flex flex-row w-full items-center justify-start xl:justify-center xl:mt-4 pt-5 p-10 xl:p-10 overflow-x-auto overflow-y-clip snap-x snap-mandatory gap-4 no-scrollbar"
                                 initial={{ opacity: 0, y: 14 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.3, ease: "easeOut" }}
                             >
                                 <motion.div
+                                    ref={chatRef}
                                     className="snap-center shrink-0"
                                     initial={{ opacity: 0, x: -28 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -213,6 +254,7 @@ export default function Jam() {
                                 </motion.div>
 
                                 <motion.div
+                                    ref={playerRef}
                                     className='snap-center shrink w-[90%] md:w-full max-w-120 min-w-80'
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -224,6 +266,7 @@ export default function Jam() {
                                 </motion.div>
 
                                 <motion.div
+                                    ref={queueRef}
                                     className="snap-center shrink-0"
                                     initial={{ opacity: 0, x: 28 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -250,7 +293,7 @@ export default function Jam() {
                                                     <motion.div
                                                         key={participant.userId || `${participant.userName}-${index}`}
                                                         title={participant.userName}
-                                                        className='shrink-0 h-11 w-11 rounded-full bg-aura-400/85 text-zinc-950 text-xs font-semibold flex items-center justify-center border border-white/40 overflow-hidden'
+                                                        className='shrink-0 h-9 w-9 rounded-full bg-aura-400/85 text-zinc-950 text-xs font-semibold flex items-center justify-center border border-white/40 overflow-hidden'
                                                         initial={{ opacity: 0, x: -28 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         exit={{ opacity: 0, x: -28 }}

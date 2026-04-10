@@ -9,6 +9,7 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
     const [isLoading, setIsLoading] = useState(true);
     const [messageObj, setMessageObj] = useState({ message: "", sender: senderId });
     const messageEndRef = useRef(null);
+    const chatScrollRef = useRef(null);
     const [rotation, setRotation] = useState({ x: 0, y: 15 });
 
     const cardRef = useRef(null);
@@ -58,7 +59,9 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
     }, [roomId])
 
     useEffect(() => {
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        if (chatScrollRef.current) {
+            chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+        }
     }, [chat])
 
     const handleSend = (e) => {
@@ -85,10 +88,10 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                     transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-80 h-120 p-4 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/4 backdrop-blur-xl border border-white/10'
+                className='flex flex-col w-72 sm:w-80 h-120 p-3 sm:p-4 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/4 backdrop-blur-xl border border-white/10'
             >
-                <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Room chat</p>
-                <div className="flex flex-col font-light tracking-tight mb-2 h-full overflow-auto scrollbar snap-y">
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Room chat</p>
+                <div ref={chatScrollRef} className="flex flex-col font-light tracking-tight mb-2 h-full overflow-y-auto overflow-x-hidden snap-y">
                     {
                         isLoading ? (
                             <div className="flex flex-col items-center justify-center h-full">
@@ -111,12 +114,12 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                                             exit={{ opacity: 0 }}
                                             transition={{ duration: 0.35, ease: "easeOut" }}
                                         >
-                                            <p className={`${msgClass} font-medium text-aura-400/90`}>
+                                            <p className={`${msgClass} font-medium text-aura-400/90 text-xs sm:text-sm`}>
                                                 {
                                                     isSystem ? "" : lastSender === messageObj.sender ? "" : isMe ? "You" : messageObj.sender
                                                 }
                                             </p>
-                                            <p className={`${msgClass} text-sm text-zinc-300`}>
+                                            <p className={`${msgClass} text-xs sm:text-sm text-zinc-300`}>
                                                 {messageObj.message}
                                             </p>
                                         </motion.div>
@@ -128,8 +131,8 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                     <div ref={messageEndRef} />
                 </div>
                 <div className="flex flex-row">
-                    <input type="text" placeholder="Type a message…" className="w-full p-2.5 my-1 text-sm rounded-xl border border-white/10 bg-white/3 text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-aura-400/40" value={messageObj.message} onChange={(e) => setMessageObj({ ...messageObj, message: e.target.value })} onKeyDown={handleKeyDown} />
-                    <button type="button" className="p-3 m-1 ml-2 rounded-full border border-white/12 text-aura-400 hover:bg-aura-400/10 transition-colors" onClick={handleSend} aria-label="Send message"><IoSend className='size-6' /></button>
+                    <input type="text" placeholder="Type a message…" className="w-full p-2 sm:p-2.5 my-1 text-xs sm:text-sm rounded-xl border border-white/10 bg-white/3 text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-aura-400/40" value={messageObj.message} onChange={(e) => setMessageObj({ ...messageObj, message: e.target.value })} onKeyDown={handleKeyDown} />
+                    <button type="button" className="p-2 sm:p-3 m-1 ml-2 rounded-full border border-white/12 text-aura-400 hover:bg-aura-400/10 transition-colors" onClick={handleSend} aria-label="Send message"><IoSend className='size-5 sm:size-6' /></button>
                 </div>
             </div>
         </>

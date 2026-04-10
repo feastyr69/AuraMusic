@@ -115,8 +115,8 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-80 h-120 p-5 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/4 backdrop-blur-xl border border-white/10'>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Add to queue</p>
+                className='flex flex-col w-72 sm:w-80 h-120 p-3 sm:p-5 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/4 backdrop-blur-xl border border-white/10'>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Add to queue</p>
                 <div className='relative w-full h-full'>
                     <AnimatePresence>
                         {queuedToast && (
@@ -136,7 +136,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                         <input
                             type="text"
                             placeholder='Search for a song'
-                            className='w-full p-2.5 my-1 text-sm rounded-xl border border-white/10 pr-10 bg-white/3 outline-none focus:border-aura-400/40 text-zinc-200 placeholder:text-zinc-500'
+                            className='w-full p-2 sm:p-2.5 my-1 text-xs sm:text-sm rounded-xl border border-white/10 pr-10 bg-white/3 outline-none focus:border-aura-400/40 text-zinc-200 placeholder:text-zinc-500'
                             onChange={handleSearchInput}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
@@ -169,8 +169,8 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                     >
                                         <img src={`https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`} alt="" className="w-10 h-10 object-cover rounded-md shrink-0 mr-3" />
                                         <div className='flex-1 min-w-0'>
-                                            <p className='text-sm truncate whitespace-nowrap'>{song.name}</p>
-                                            <p className='text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
+                                            <p className='text-xs truncate whitespace-nowrap'>{song.name}</p>
+                                            <p className='text-[10px] truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
                                         </div>
                                     </motion.div>
                                 )
@@ -222,8 +222,8 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                                 )}
                                             </div>
                                             <div className='flex-1 min-w-0 pr-2'>
-                                                <p className={`text-sm ${index === 0 ? 'text-aura-400 font-medium' : 'text-zinc-200'} truncate whitespace-nowrap`}>{song.name}</p>
-                                                <p className='text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
+                                                <p className={`text-xs sm:text-sm ${index === 0 ? 'text-aura-400 font-medium' : 'text-zinc-200'} truncate whitespace-nowrap`}>{song.name}</p>
+                                                <p className='text-[10px] sm:text-xs truncate whitespace-nowrap text-white/70'>{song.artist.name}</p>
                                             </div>
                                             {index !== 0 && (
                                                 <button
