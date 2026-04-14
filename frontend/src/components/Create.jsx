@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { IoMdAdd } from "react-icons/io";
 import Navbar from './Navbar'
 import { apiBaseURL } from '../axiosInstance';
@@ -6,14 +6,27 @@ import { useNavigate } from 'react-router-dom';
 
 const Create = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     const createRoom = async () => {
+        setLoading(true);
         const response = await apiBaseURL.get("/create");
         const roomData = response.data;
         navigate(`/jam/${roomData.roomId}`);
+        setLoading(false);
     }
     return (
         <>
             <Navbar />
+            {loading &&
+                (<div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
+                    <div className="flex flex-col items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-2 border-zinc-600 border-t-aura-400"></div>
+                        <p className="text-zinc-400 text-sm text-center max-w-xs mt-3 leading-relaxed">
+                            Creating room...
+                        </p>
+                    </div>
+                </div>)}
+
             <div className="flex items-center justify-center w-full mt-2 px-4 pb-16">
                 <div className="w-full max-w-5xl">
                     <div className="text-center pt-8 md:pt-12">

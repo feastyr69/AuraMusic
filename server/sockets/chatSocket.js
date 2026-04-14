@@ -8,6 +8,11 @@ const connectIO = (io) => {
     io.on("connection", (socket) => {
         console.log("A user connected");
 
+        //haath mat chhorna saath mat chhorna
+        socket.on("keep-alive", (data) => {
+            console.log("Ping came at", data.timestamp);
+        });
+
         //user join room
         socket.on("join-room", async (clientData) => {
             const { roomId, sessionId, userName, avatarUrl, joinedAt } = clientData;

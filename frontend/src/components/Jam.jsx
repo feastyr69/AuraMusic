@@ -30,9 +30,6 @@ const socket = io(backendUrl, {
     reconnectionDelay: 1000,
     pingInterval: 5000,
     pingTimeout: 10000,
-    extraHeaders: {
-        "user-info": JSON.stringify(userInfo)
-    }
 });
 
 socket.on("connect", () => {
