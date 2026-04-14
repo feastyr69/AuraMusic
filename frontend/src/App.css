@@ -25,7 +25,7 @@
 @layer base {
   /* Scale all rem-based text down on small screens */
   html {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   @media (min-width: 640px) {
