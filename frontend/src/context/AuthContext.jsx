@@ -10,7 +10,8 @@ export const AuthProvider = ({ children }) => {
   const checkLoginStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiBaseURL.post('/auth/refresh');
+      const storedRefresh = localStorage.getItem('refreshToken');
+      const res = await apiBaseURL.post('/auth/refresh', storedRefresh ? { refreshToken: storedRefresh } : {});
       if (res.data.success && res.data.accessToken) {
         setAccessToken(res.data.accessToken);
         setUser(res.data.user);
@@ -30,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     // Prevent wiping state due to duplicate background refreshing if we're currently processing a Google callback token
     if (window.location.search.includes('token=')) {
       setLoading(false);
-      return; 
+      return;
     }
     checkLoginStatus();
   }, [checkLoginStatus]);
@@ -39,10 +40,10 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       setAccessToken(token);
       try {
-          const res = await apiBaseURL.get('/auth/status');
-          setUser(res.data.user);
+        const res = await apiBaseURL.get('/auth/status');
+        setUser(res.data.user);
       } catch (e) {
-          await checkLoginStatus();
+        await checkLoginStatus();
       }
     }
   };
@@ -50,9 +51,10 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await apiBaseURL.post('/auth/logout');
-    } catch (e) {}
+    } catch (e) { }
     setAccessToken(null);
     setUser(null);
+    localStorage.removeItem('refreshToken');
   };
 
   return (

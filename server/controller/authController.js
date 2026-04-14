@@ -89,11 +89,15 @@ const googleCallback = (req, res) => {
 
     res.cookie('refreshToken', refreshToken, getCookieConfig());
 
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/callback?token=${accessToken}`);
+    // Also pass refresh token in the URL so the frontend can store it in localStorage —
+    // required for cross-domain deployments (Vercel + Render) where browsers block third-party cookies.
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/callback?token=${accessToken}&refresh=${refreshToken}`);
 };
 
 const refresh = async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
+    // Prefer httpOnly cookie; fall back to body token for cross-domain setups
+    // where browsers block third-party cookies (Vercel + Render, Safari ITP, etc.)
+    const refreshToken = req.cookies.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {
         return res.status(401).json({ success: false, message: "No refresh token provided" });
     }

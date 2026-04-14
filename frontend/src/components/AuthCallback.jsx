@@ -12,7 +12,14 @@ export default function AuthCallback() {
     const processToken = async () => {
       const params = new URLSearchParams(location.search);
       const token = params.get('token');
-      
+      const refresh = params.get('refresh');
+
+      // Persist the refresh token in localStorage so it survives page reloads.
+      // Cross-domain deployments (Vercel + Render) can't rely on third-party cookies.
+      if (refresh) {
+        localStorage.setItem('refreshToken', refresh);
+      }
+
       if (token) {
         await login(token);
         navigate('/');
