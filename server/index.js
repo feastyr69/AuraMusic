@@ -15,7 +15,9 @@ const httpServer = createServer(app);
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:5173",
-  "https://aura-backend-ebam.onrender.com"
+  "https://aura-backend-ebam.onrender.com",
+  "https://www.auramusic.app",
+  "https://auramusic.app"
 ].filter(Boolean);
 
 app.use(cors({
