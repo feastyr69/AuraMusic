@@ -14,7 +14,7 @@ function GiphyPicker({ onSelect, onClose }) {
     useEffect(() => { searchRef.current?.focus(); }, []);
 
     useEffect(() => {
-        const t = setTimeout(() => setDebouncedQuery(query), 400);
+        const t = setTimeout(() => setDebouncedQuery(query), 600);
         return () => clearTimeout(t);
     }, [query]);
 
@@ -141,8 +141,13 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
     }
 
     const handleGifSelect = (gif) => {
-        const gifUrl = gif.images.fixed_height_small.url || gif.images.downsized.url;
-        const gifMsg = { message: '', gifUrl, sender: senderId };
+        const gifObj = {
+            url: gif.images.downsized_small.mp4 || gif.images.downsized.url,
+            thumbnail: gif.images.fixed_height_still.url,
+            width: gif.images.downsized_small.width,
+            height: gif.images.downsized_small.height
+        };
+        const gifMsg = { message: '', gifObj, sender: senderId };
         socket.emit('send-message', { roomId, messageObj: gifMsg });
         setChat((prevChat) => [...prevChat, buildMessage(gifMsg)]);
         setShowGiphy(false);
@@ -196,8 +201,8 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                                                 }
                                             </p>
                                             <p className={`${msgClass} text-sm text-zinc-300`}>
-                                                {messageObj.gifUrl
-                                                    ? <img src={messageObj.gifUrl} alt="GIF" className="rounded-lg max-w-[180px] mt-1" loading="lazy" onLoad={scrollToBottom} />
+                                                {messageObj.gifObj
+                                                    ? <video src={messageObj.gifObj.url} autoPlay loop muted playsInline poster={messageObj.gifObj.thumbnail} alt="GIF" className="rounded-lg max-w-[180px] max-h-[160px] mt-1 mb-1" loading="lazy" onLoad={scrollToBottom} />
                                                     : messageObj.message
                                                 }
                                             </p>

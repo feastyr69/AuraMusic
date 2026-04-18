@@ -22,7 +22,7 @@ const Create = () => {
                     <div className="flex flex-col items-center justify-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-2 border-zinc-600 border-t-aura-400"></div>
                         <p className="text-zinc-400 text-sm text-center max-w-xs mt-3 leading-relaxed">
-                            Creating room...
+                            Creating room...<br></br> (This may take a minute to start the server)
                         </p>
                     </div>
                 </div>)}
