@@ -176,7 +176,7 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                         ) : (
                             <AnimatePresence initial={false}>
                                 {chat.map((messageObj, index) => {
-                                    const msgClass = messageObj.sender === "System" ? "w-full font-medium text-zinc-500 uppercase text-sm" : "w-full break-words whitespace-pre-wrap";
+                                    const msgClass = messageObj.sender === "System" ? "w-full font-medium text-zinc-500 uppercase text-xs" : "w-full break-words whitespace-pre-wrap";
                                     const isMe = messageObj.sender === senderId;
                                     const isSystem = messageObj.sender === "System";
                                     const lastSender = chat[index - 1]?.sender;
