@@ -1,6 +1,6 @@
-# AuraMusic
+# Aura - Real Time Listening Platform
 
-AuraMusic (also known as Feastyr) is a real-time collaborative music jam session platform. It allows users to create rooms, invite friends, and listen to music together in perfect sync. Alongside synchronized YouTube playback, users can chat in real-time, sharing texts and GIFs.
+Aura. is a real-time collaborative music jam session platform. It allows users to create rooms, invite friends, and listen to music together in perfect sync. Alongside synchronized YouTube playback, users can chat in real-time, sharing texts and GIFs.
 
 ## Features
 
