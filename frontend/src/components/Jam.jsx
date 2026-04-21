@@ -272,6 +272,9 @@ export default function Jam() {
                                     <p className='max-w-sm text-sm md:text-base text-white/65 leading-relaxed'>
                                         Join the room to chat, queue songs, and keep the music flowing together.
                                     </p>
+                                    <p className='max-w-sm text-xs md:text-sm text-rose-400/80 leading-relaxed'>
+                                        Brave or Chrome recommended for best experience. Other browsers or In-App browsers might cause issues.
+                                    </p>
                                 </div>
 
                                 <div className='relative flex items-center justify-between pt-4 mt-4 border-t border-white/10'>
