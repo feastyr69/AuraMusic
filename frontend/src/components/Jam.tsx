@@ -15,6 +15,8 @@ import backendUrl from '../utils/backendUrl';
 import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
 import { AuthContext } from '../context/AuthContext';
+import ImmersiveBackground from './ImmersiveBackground';
+import LyricsPlayer from './LyricsPlayer';
 
 let sessionId = localStorage.getItem("sessionId");
 let userName = localStorage.getItem("userName");
@@ -50,6 +52,7 @@ export default function Jam() {
     const [roomData, setRoomData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [roomUsers, setRoomUsers] = useState([]);
+    const [currentSong, setCurrentSong] = useState<any>(null);
     const [inviteCopied, setInviteCopied] = useState(false);
     const [activeTab, setActiveTab] = useState(1); // 0=Chat, 1=Player, 2=Queue
     const [connectionStatus, setConnectionStatus] = useState('connected'); // 'connected' | 'disconnected' | 'reconnecting'
@@ -148,10 +151,15 @@ export default function Jam() {
 
             setRoomUsers(Array.isArray(users) ? users : []);
         };
+        const handleCurrentSong = (data) => {
+            setCurrentSong(data);
+        };
 
         socket.on("update-users", handleUpdateUsers);
+        socket.on("current-song", handleCurrentSong);
         return () => {
             socket.off("update-users", handleUpdateUsers);
+            socket.off("current-song", handleCurrentSong);
         };
     }, []);
 
@@ -210,6 +218,7 @@ export default function Jam() {
 
     return (
         <>
+            {showPlayer && <ImmersiveBackground videoId={currentSong?.videoId} />}
             <Navbar />
             {reconnectBanner}
             <div className="relative w-full flex justify-center overflow-hidden">
@@ -356,6 +365,12 @@ export default function Jam() {
                                     <Queue roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
                                 </motion.div>
                             </motion.div>
+                            
+                            {/* Lyrics Player below player and above users list */}
+                            <div className="w-full max-w-4xl px-4 z-10">
+                                <LyricsPlayer songTitle={currentSong ? `${currentSong.artist?.name || ""} ${currentSong.name || ""}`.trim() : null} />
+                            </div>
+
                             <motion.div
                                 className='flex w-full max-w-3xl items-center gap-3'
                                 initial={{ opacity: 0, y: 20 }}

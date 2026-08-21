@@ -243,14 +243,16 @@ export default function Player({ roomId, userName, socket }) {
         if (!isPlayerReady || !currentSong) return;
         if (isPlayingRef.current) {
             progressInterval.current = setInterval(() => {
-                setProgress(playerRef.current.getCurrentTime());
+                const currentTime = playerRef.current.getCurrentTime();
+                setProgress(currentTime);
+                window.dispatchEvent(new CustomEvent('player-time-update', { detail: { timeMs: currentTime * 1000 } }));
                 const state = playerRef.current.getPlayerState();
                 if (state === 0) {
                     clearInterval(progressInterval.current);
                     setIsPlaying(false);
                     socket.emit('next-song', roomId, currentSong.videoId);
                 }
-            }, 1000);
+            }, 250);
         } else {
             clearInterval(progressInterval.current);
         }
