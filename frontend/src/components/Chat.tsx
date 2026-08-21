@@ -31,7 +31,7 @@ function GiphyPicker({ onSelect, onClose }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute bottom-full mb-2 left-0 right-0 z-50 rounded-xl border border-white/10 bg-black/85 backdrop-blur-xl shadow-[0_16px_48px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col"
+            className="absolute bottom-full mb-2 left-0 right-0 z-50 rounded-xl border border-white/10 bg-black/85 shadow-[0_16px_48px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col"
             style={{ height: '280px' }}
             onClick={(e) => e.stopPropagation()}
         >
@@ -169,7 +169,7 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                     transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-78 sm:w-80 h-120 p-3 sm:p-4 rounded-xl shadow-2xl shadow-black/20 bg-white/4 backdrop-blur-xl border border-white/10'
+                className='flex flex-col w-78 sm:w-80 h-120 p-3 sm:p-4 rounded-xl shadow-2xl shadow-black/20 bg-white/4 border border-white/10'
             >
                 <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Room chat</p>
                 <div ref={chatScrollRef} className="flex flex-col font-light tracking-tight mb-2 h-full overflow-y-auto overflow-x-hidden snap-y scrollbar">

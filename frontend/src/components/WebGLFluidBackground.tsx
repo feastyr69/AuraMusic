@@ -175,12 +175,14 @@ export default function WebGLFluidBackground({ imageUrl }: WebGLFluidBackgroundP
 
     // Render loop
     const render = (time: number) => {
-      // Resize canvas to match display size
-      const displayWidth = canvas.clientWidth;
-      const displayHeight = canvas.clientHeight;
+      // Massively downscale rendering resolution for performance
+      // Because we apply heavy CSS blur, high resolution is completely wasted and causes lag
+      const downscaleFactor = 8;
+      const displayWidth = Math.floor(canvas.clientWidth / downscaleFactor);
+      const displayHeight = Math.floor(canvas.clientHeight / downscaleFactor);
       if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-        canvas.width = displayWidth;
-        canvas.height = displayHeight;
+        canvas.width = displayWidth || 1;
+        canvas.height = displayHeight || 1;
       }
       
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);

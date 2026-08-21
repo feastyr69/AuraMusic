@@ -275,7 +275,7 @@ export default function Player({ roomId, userName, socket }) {
                     transition: rotation.x === 0 && rotation.y === 0 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 backdrop-blur-xl justify-between'
+                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 justify-between'
             >
                 {/* Hidden YouTube Player */}
                 <div className="absolute opacity-0 pointer-events-none">
@@ -373,7 +373,7 @@ export default function Player({ roomId, userName, socket }) {
                                 <IoVolumeHigh size={24} />
                             </button>
                             {showVolume && (
-                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center bg-zinc-900/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl"
+                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center bg-zinc-900/90 border border-white/10 rounded-xl shadow-xl"
                                     style={{ width: 36, height: 120 }}>
                                     <input
                                         type="range"

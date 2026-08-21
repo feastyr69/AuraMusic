@@ -26,14 +26,18 @@ const ImmersiveBackground: React.FC<ImmersiveBackgroundProps> = ({ videoId }) =>
                                 style={{
                                     backgroundImage: `url(https://img.youtube.com/vi/${videoId}/hqdefault.jpg)`,
                                     filter: "blur(80px) brightness(0.2) saturate(1.2)",
+                                    willChange: "transform, filter",
+                                    transform: "translateZ(0)"
                                 }}
                             />
 
                             {/* True WebGL Fluid Mesh Gradient */}
                             <div
-                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-50"
+                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-60"
                                 style={{
                                     filter: "blur(60px) brightness(0.5) saturate(1.5)",
+                                    willChange: "transform, filter",
+                                    transform: "translateZ(0)"
                                 }}
                             >
                                 <WebGLFluidBackground imageUrl={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} />
