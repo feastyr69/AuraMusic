@@ -273,7 +273,7 @@ export default function Player({ roomId, userName, socket }) {
                 tabIndex={0}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: rotation.x === 0 && rotation.y === 0 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
+                    transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
                 className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 justify-between'
@@ -337,7 +337,10 @@ export default function Player({ roomId, userName, socket }) {
                 </div>
 
                 {/* Playback Controls Area */}
-                <div className="flex flex-col w-full mt-auto relative z-10">
+                <div 
+                    className="flex flex-col w-full mt-auto relative z-10"
+                    onMouseMove={(e) => e.stopPropagation()}
+                >
                     {/* Scrubber */}
                     <div className="w-full mb-4 px-2">
                         <div className="w-full h-[6px] bg-white/10 rounded-full relative overflow-hidden group">
