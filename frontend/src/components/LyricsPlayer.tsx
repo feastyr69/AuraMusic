@@ -49,7 +49,7 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
         const handleTimeUpdate = (e: any) => {
             const timeMs = e.detail.timeMs;
             setCurrentTime(timeMs);
-            
+
             if (lyrics.length > 0) {
                 let newIndex = -1;
                 for (let i = 0; i < lyrics.length; i++) {
@@ -79,8 +79,8 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
         const nextLine = lyrics[activeIndex + 1];
         // Calculate duration until next line, cap at 5 seconds so it doesn't drag slowly during instrumental breaks
         const durationMs = nextLine ? nextLine.timeMs - activeLine.timeMs : 4000;
-        const highlightDuration = Math.min(durationMs, 5000); 
-        
+        const highlightDuration = Math.min(durationMs, 5000);
+
         const progress = Math.min(Math.max((currentTime - activeLine.timeMs) / highlightDuration, 0), 1);
         words = activeLine.text.split(" ");
         highlightedIndex = Math.floor(progress * words.length);
@@ -97,7 +97,7 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
                     <p className="text-zinc-500/70 font-medium text-xs tracking-wider uppercase">Lyrics not available</p>
                 </motion.div>
             ) : (
-                <motion.div 
+                <motion.div
                     key="lyrics-container"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -107,7 +107,7 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
                 >
                     <AnimatePresence>
                         {activeLine && (
-                            <motion.div 
+                            <motion.div
                                 key={activeIndex}
                                 initial={{ opacity: 0, filter: 'blur(8px)', y: 15, scale: 0.95 }}
                                 animate={{ opacity: 1, filter: 'blur(0px)', y: 0, scale: 1 }}
@@ -115,17 +115,16 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
                                 transition={{ duration: 0.5, ease: "easeInOut" }}
                                 className="absolute top-0 w-full h-full flex items-center justify-center px-4 text-center"
                             >
-                                <p className="font-display tracking-tight text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
+                                <p className="font-display tracking-tight text-2xl sm:text-3xl md:text-4xl font-black leading-tight">
                                     {words.map((word, i) => {
                                         const isHighlighted = i <= highlightedIndex;
                                         return (
-                                            <span 
-                                                key={i} 
-                                                className={`transition-colors duration-200 inline-block mr-[0.3em] ${
-                                                    isHighlighted 
-                                                    ? 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.15)]' 
-                                                    : 'text-white/20'
-                                                }`}
+                                            <span
+                                                key={i}
+                                                className={`transition-colors duration-200 inline-block mr-[0.3em] ${isHighlighted
+                                                        ? 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.15)]'
+                                                        : 'text-white/20'
+                                                    }`}
                                             >
                                                 {word}
                                             </span>
