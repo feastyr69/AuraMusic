@@ -34,6 +34,8 @@ function GiphyPicker({ onSelect, onClose }) {
             className="absolute bottom-full mb-2 left-0 right-0 z-50 rounded-xl border border-white/10 bg-black/85 shadow-[0_16px_48px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col"
             style={{ height: '280px' }}
             onClick={(e) => e.stopPropagation()}
+            onMouseMove={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
         >
             <div className="flex items-center gap-2 px-3 py-2 border-b border-white/8 shrink-0">
                 <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">GIF</span>
@@ -54,7 +56,7 @@ function GiphyPicker({ onSelect, onClose }) {
                     columns={3}
                     gutter={4}
                     fetchGifs={fetchGifs}
-                    onGifClick={(gif, e) => { e.preventDefault(); onSelect(gif); }}
+                    onGifClick={(gif) => onSelect(gif)}
                     noLink
                     hideAttribution
                     style={{ padding: '6px' }}
