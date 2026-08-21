@@ -123,7 +123,7 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
                                                 key={i} 
                                                 className={`transition-colors duration-200 inline-block mr-[0.3em] ${
                                                     isHighlighted 
-                                                    ? 'text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]' 
+                                                    ? 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.15)]' 
                                                     : 'text-white/20'
                                                 }`}
                                             >
