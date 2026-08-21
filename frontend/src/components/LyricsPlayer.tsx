@@ -85,8 +85,7 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
     if (!songTitle) return null;
 
     const activeLine = activeIndex >= 0 && lyrics.length > 0 ? lyrics[activeIndex] : null;
-    let words: string[] = [];
-    let highlightedIndex = -1;
+    let progressPercent = "100%";
 
     if (activeLine) {
         const nextLine = lyrics[activeIndex + 1];
@@ -95,8 +94,8 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
         const highlightDuration = Math.min(durationMs, 5000);
 
         const progress = Math.min(Math.max((currentTime - activeLine.timeMs) / highlightDuration, 0), 1);
-        words = activeLine.text.split(" ");
-        highlightedIndex = Math.floor(progress * words.length);
+        // We go from 100% to 0% for the background-position sliding trick
+        progressPercent = `${(100 - (progress * 100)).toFixed(2)}%`;
     }
 
     const isHidden = !isLoading && (error || lyrics.length === 0) && !showError;
@@ -141,22 +140,20 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
                                     transition={{ duration: 0.5, ease: "easeInOut" }}
                                     className="absolute top-0 w-full h-full flex items-center justify-center px-4 text-center"
                                 >
-                                    <p className="font-display tracking-tight text-2xl sm:text-3xl md:text-4xl font-black leading-tight">
-                                        {words.map((word, i) => {
-                                            const isHighlighted = i <= highlightedIndex;
-                                            return (
-                                                <span
-                                                    key={i}
-                                                    className={`transition-colors duration-200 inline-block mr-[0.3em] ${isHighlighted
-                                                            ? 'text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.15)]'
-                                                            : 'text-white/20'
-                                                        }`}
-                                                >
-                                                    {word}
-                                                </span>
-                                            );
-                                        })}
-                                        {!activeLine.text && <span className="text-white/30">♪</span>}
+                                    <p className="font-display tracking-tight text-2xl sm:text-3xl md:text-4xl font-black leading-tight drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
+                                        <span 
+                                            className="bg-clip-text text-transparent"
+                                            style={{
+                                                backgroundImage: `linear-gradient(to right, #ffffff 0%, #ffffff 45%, rgba(255,255,255,0.2) 55%, rgba(255,255,255,0.2) 100%)`,
+                                                backgroundSize: '300% 100%',
+                                                backgroundPositionX: progressPercent,
+                                                transition: 'background-position 250ms linear',
+                                                WebkitBackgroundClip: 'text',
+                                                WebkitTextFillColor: 'transparent',
+                                            }}
+                                        >
+                                            {activeLine.text || "♪"}
+                                        </span>
                                     </p>
                                 </motion.div>
                             )}
