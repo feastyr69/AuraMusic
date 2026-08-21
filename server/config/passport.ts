@@ -8,7 +8,7 @@ passport.use(new GoogleStrategy({
     proxy: true
 },
     async function (accessToken, refreshToken, profile, cb) {
-        console.log("GOOGLE PROFILE DUMP:", JSON.stringify(profile, null, 2));
+
         try {
             const avatarUrl = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
             let googleName = profile.displayName;
@@ -57,7 +57,7 @@ passport.use(new GoogleStrategy({
 ));
 
 passport.serializeUser((user, done) => {
-    console.log("SERIALIZING USER:", user.id);
+
     done(null, user.id); // Storing just the ID in the cookie session
 });
 

@@ -63,7 +63,7 @@ export default function Player({ roomId, userName, socket }) {
     const progressInterval = useRef(null);
     const onReady = (event) => {
         playerRef.current = event.target;
-        console.log('just joined, requesting sync')
+
         playerRef.current.setPlaybackQuality('small');
         isPlayingRef.current = true;
         setIsPlayerReady(true);
@@ -168,7 +168,7 @@ export default function Player({ roomId, userName, socket }) {
 
     useEffect(() => {
         if (!isPlayerReady) return;
-        console.log('player ready');
+
 
         socket.emit('request-sync', roomId);
         socket.emit('get-current-song', roomId);
@@ -188,7 +188,7 @@ export default function Player({ roomId, userName, socket }) {
         });
 
         socket.on('current-song', (data) => {
-            console.log('song came', data);
+
             if (!data) {
                 setCurrentSong(null);
                 if (isPlayerReadyRef.current) playerRef.current?.cueVideoById?.({ videoId: "" });
@@ -201,7 +201,7 @@ export default function Player({ roomId, userName, socket }) {
         })
 
         socket.on('receive-sync-song', (data) => {
-            console.log("receive-sync-song", data);
+
             const { videoId, isPlaying: syncIsPlaying, songData, timestamp } = data;
 
             // latency compensation

@@ -104,7 +104,7 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
     useEffect(() => {
         const timestamp = Date.now();
         const clientData = { roomId, sessionId, userName, avatarUrl, joinedAt: timestamp };
-        console.log(clientData);
+
         socket.emit('join-room', clientData);
         socket.on('room-history', (history) => {
             setIsLoading(false);

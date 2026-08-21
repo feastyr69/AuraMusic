@@ -73,7 +73,7 @@ export default function Jam() {
     // Auto-reconnect: re-join room whenever the socket reconnects
     useEffect(() => {
         const handleConnect = () => {
-            console.log("Socket connected");
+
             setConnectionStatus('connected');
             // Re-join room on every reconnect (but not the very first connection —
             // Chat.jsx handles the initial join-room on mount)
@@ -111,7 +111,7 @@ export default function Jam() {
     }, []);
 
     useEffect(() => {
-        console.log("Checking room...");
+
         const checkRoom = async () => {
             const res = await apiBaseURL.get(`/room/${roomId}`);
             //console.log(res.data);
@@ -120,7 +120,7 @@ export default function Jam() {
             }
             await user;
             if (user) {
-                console.log(user);
+
                 setUserName(user.google_name || user.username);
                 localStorage.setItem("userName", user.google_name || user.username);
             }
@@ -145,7 +145,7 @@ export default function Jam() {
 
     useEffect(() => {
         const handleUpdateUsers = (users = []) => {
-            //console.log("Users updated:", users);
+
             setRoomUsers(Array.isArray(users) ? users : []);
         };
 

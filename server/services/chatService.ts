@@ -15,7 +15,7 @@ const createRoom = async (req, res) =>{
             
         });
         await redisClient.expire(`room:${roomId}:info`, 60 * 60);
-        console.log("Creating room...", roomId);
+
         return res.status(200).json({ roomId });
     } catch (error) {
         console.error("Error creating room:", error);
@@ -48,7 +48,7 @@ const getRoomHistory = async (roomId) =>{
         const rawMessages = await redisClient.lRange(roomKey, 0, -1);
         return rawMessages.map(msg => JSON.parse(msg));
     }catch(err){
-        console.log(err);
+        console.error("Error getting room history:", err);
         return [];
     }
 }
@@ -60,7 +60,7 @@ const saveMessage = async (roomId, msgObj) => {
         await redisClient.rPush(roomKey, JSON.stringify({ ...msgObj, timestamp }));
         await redisClient.expire(roomKey, 60 * 60);
     } catch (err) {
-        console.log(err);
+        console.error("Error saving message:", err);
     }
 }
 

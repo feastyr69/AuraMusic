@@ -33,7 +33,7 @@ export default function Login() {
       await login(data.token);
       navigate('/');
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setError(err.message);
     } finally {
       setIsLoading(false);
