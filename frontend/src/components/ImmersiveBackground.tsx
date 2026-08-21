@@ -22,7 +22,7 @@ const ImmersiveBackground: React.FC<ImmersiveBackgroundProps> = ({ videoId }) =>
                         <div className="absolute inset-0 w-full h-full overflow-hidden">
                             {/* Base layer for ambient color */}
                             <div
-                                className="absolute inset-[-20%] w-[140%] h-[140%] bg-center bg-cover opacity-20"
+                                className="absolute inset-[-20%] w-[140%] h-[140%] bg-center bg-cover opacity-40 md:opacity-20"
                                 style={{
                                     backgroundImage: `url(https://img.youtube.com/vi/${videoId}/hqdefault.jpg)`,
                                     filter: "blur(80px) brightness(0.2) saturate(1.2)",
@@ -33,7 +33,7 @@ const ImmersiveBackground: React.FC<ImmersiveBackgroundProps> = ({ videoId }) =>
 
                             {/* True WebGL Fluid Mesh Gradient */}
                             <div
-                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-60"
+                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-80 md:opacity-60"
                                 style={{
                                     filter: "blur(60px) brightness(0.5) saturate(1.5)",
                                     willChange: "transform, filter",
@@ -47,7 +47,7 @@ const ImmersiveBackground: React.FC<ImmersiveBackgroundProps> = ({ videoId }) =>
                 )}
             </AnimatePresence>
             {/* Gradient overlay to ensure text remains readable */}
-            {videoId && <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/60 to-zinc-950/90" />}
+            {videoId && <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-zinc-950/50 to-zinc-950/80 md:from-zinc-950/40 md:via-zinc-950/60 md:to-zinc-950/90" />}
 
         </div>
     );

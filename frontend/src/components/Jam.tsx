@@ -304,7 +304,7 @@ export default function Jam() {
                     ) : (
                         <div className='flex flex-col w-full items-center'>
                             {/* Mobile-only tab navigator */}
-                            <div className="md:hidden flex items-center gap-3 mt-6 mb-2 px-4 py-1 rounded-full border border-white/10 bg-white/4 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                            <div className="md:hidden flex items-center justify-center gap-6 mt-4 mb-0">
                                 {["Chat", "Player", "Queue"].map((label, idx) => (
                                     <button
                                         key={label}
@@ -313,12 +313,12 @@ export default function Jam() {
                                             const refs = [chatRef, playerRef, queueRef];
                                             refs[idx].current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
                                         }}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-200 ${activeTab === idx
-                                            ? "bg-aura-400/15 text-aura-400 border border-aura-400/40"
+                                        className={`flex items-center gap-1.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-200 ${activeTab === idx
+                                            ? "text-aura-400"
                                             : "text-zinc-500 hover:text-zinc-300"
                                             }`}
                                     >
-                                        <span className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${activeTab === idx ? "bg-aura-400" : "bg-zinc-600"
+                                        <span className={`w-1 h-1 rounded-full transition-all duration-200 ${activeTab === idx ? "bg-aura-400 shadow-[0_0_8px_rgba(212,165,116,0.8)]" : "bg-transparent"
                                             }`} />
                                         {label}
                                     </button>
