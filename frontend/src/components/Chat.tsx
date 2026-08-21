@@ -168,8 +168,7 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                 onMouseLeave={handleMouseLeave}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: 'transform 0.5s ease-out',
-                    transformStyle: 'preserve-3d'
+                    transition: 'transform 0.5s ease-out'
                 }}
                 className='flex flex-col w-78 sm:w-80 h-120 p-3 sm:p-4 rounded-xl shadow-2xl shadow-black/20 bg-white/4 border border-white/10'
             >

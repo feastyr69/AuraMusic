@@ -273,8 +273,7 @@ export default function Player({ roomId, userName, socket }) {
                 tabIndex={0}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: 'transform 0.5s ease-out',
-                    transformStyle: 'preserve-3d'
+                    transition: 'transform 0.5s ease-out'
                 }}
                 className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 justify-between'
             >

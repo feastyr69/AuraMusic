@@ -112,8 +112,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                 onMouseLeave={handleMouseLeave}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: 'transform 0.5s ease-out',
-                    transformStyle: 'preserve-3d'
+                    transition: 'transform 0.5s ease-out'
                 }}
                 className='flex flex-col w-78 sm:w-80 h-120 p-3 sm:p-5 rounded-xl shadow-2xl shadow-black/20 bg-white/4 border border-white/10'>
                 <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Add to queue</p>
