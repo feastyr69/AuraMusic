@@ -91,81 +91,79 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
 
     if (!songTitle) return null;
 
-    if (isLoading) {
-        return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full flex justify-center items-center my-4">
-                <p className="text-zinc-500 font-medium text-sm animate-pulse">Finding lyrics...</p>
-            </motion.div>
-        );
-    }
-
-    if (error || lyrics.length === 0) {
-        return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full flex justify-center items-center my-4">
-                <p className="text-zinc-500/70 font-medium text-xs tracking-wider uppercase">Lyrics not available</p>
-            </motion.div>
-        );
-    }
-
     return (
-        <motion.div 
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="w-full flex justify-center -mt-2 mb-4 h-28 relative pointer-events-none z-0"
-        >
-            <div 
-                ref={containerRef}
-                className="w-full h-full overflow-hidden"
-                style={{
-                    maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)'
-                }}
-            >
-                <motion.div 
-                    className="w-full flex flex-col items-center"
-                    animate={{ y: yOffset }}
-                    transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                >
-                    {lyrics.map((line, index) => {
-                        const isActive = index === activeIndex;
-                        const distance = Math.abs(index - activeIndex);
-                        
-                        let opacity = 0.05;
-                        let scale = 0.9;
-                        
-                        if (isActive) {
-                            opacity = 1;
-                            scale = 1.05;
-                        } else if (distance === 1) {
-                            opacity = 0.5;
-                            scale = 0.95;
-                        }
-
-                        return (
-                            <motion.div
-                                key={index}
-                                ref={(el) => (lineRefs.current[index] = el)}
-                                initial={false}
-                                animate={{ opacity, scale }}
-                                transition={{ duration: 0.5, ease: "easeOut" }}
-                                className={`text-center py-0.5 w-full max-w-2xl origin-center flex items-center justify-center min-h-[32px]`}
-                            >
-                                <p 
-                                    className={`font-display tracking-tight transition-colors duration-500 ${
-                                        isActive 
-                                        ? 'text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]' 
-                                        : 'text-base sm:text-lg md:text-xl font-medium text-zinc-400'
-                                    }`}
-                                >
-                                    {line.text || "♪"}
-                                </p>
-                            </motion.div>
-                        );
-                    })}
+        <AnimatePresence mode="wait">
+            {isLoading ? (
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex justify-center items-center my-4 h-12">
+                    <p className="text-zinc-500 font-medium text-sm animate-pulse">Finding lyrics...</p>
                 </motion.div>
-            </div>
-        </motion.div>
+            ) : error || lyrics.length === 0 ? (
+                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex justify-center items-center my-4 h-12">
+                    <p className="text-zinc-500/70 font-medium text-xs tracking-wider uppercase">Lyrics not available</p>
+                </motion.div>
+            ) : (
+                <motion.div 
+                    key="lyrics"
+                    initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="w-full flex justify-center -mt-2 mb-4 h-28 relative pointer-events-none z-0"
+                >
+                    <div 
+                        ref={containerRef}
+                        className="w-full h-full overflow-hidden"
+                        style={{
+                            maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)'
+                        }}
+                    >
+                        <motion.div 
+                            className="w-full flex flex-col items-center"
+                            animate={{ y: yOffset }}
+                            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                        >
+                            {lyrics.map((line, index) => {
+                                const isActive = index === activeIndex;
+                                const distance = Math.abs(index - activeIndex);
+                                
+                                let opacity = 0.05;
+                                let scale = 0.9;
+                                
+                                if (isActive) {
+                                    opacity = 1;
+                                    scale = 1.05;
+                                } else if (distance === 1) {
+                                    opacity = 0.5;
+                                    scale = 0.95;
+                                }
+
+                                return (
+                                    <motion.div
+                                        key={index}
+                                        ref={(el) => (lineRefs.current[index] = el)}
+                                        initial={false}
+                                        animate={{ opacity, scale }}
+                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                        className={`text-center py-0.5 w-full max-w-2xl origin-center flex items-center justify-center min-h-[32px]`}
+                                    >
+                                        <p 
+                                            className={`font-display tracking-tight transition-colors duration-500 ${
+                                                isActive 
+                                                ? 'text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]' 
+                                                : 'text-base sm:text-lg md:text-xl font-medium text-zinc-400'
+                                            }`}
+                                        >
+                                            {line.text || "♪"}
+                                        </p>
+                                    </motion.div>
+                                );
+                            })}
+                        </motion.div>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 };
 
