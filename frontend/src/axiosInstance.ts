@@ -1,7 +1,8 @@
 import axios from "axios";
+import backendUrl from "./utils/backendUrl";
 
 export const apiBaseURL = axios.create({
-  baseURL: "https://aura-backend-ebam.onrender.com/api",
+  baseURL: `${backendUrl}/api`,
   withCredentials: true
 });
 
@@ -27,7 +28,7 @@ apiBaseURL.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const res = await axios.post("https://aura-backend-ebam.onrender.com/api/auth/refresh", {}, { withCredentials: true });
+        const res = await axios.post(`${backendUrl}/api/auth/refresh`, {}, { withCredentials: true });
         setAccessToken(res.data.accessToken);
         originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
         return apiBaseURL(originalRequest);

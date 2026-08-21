@@ -1,14 +1,12 @@
+require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const apiRouter = require("./routes/apiRoutes");
 const connectIO = require("./sockets/chatSocket");
 const { connectRedis, socketAdapter } = require("./config/redis");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 const { createServer } = require("http");
-dotenv.config({ path: "./.env" });
-
 const app = express();
 const httpServer = createServer(app);
 
