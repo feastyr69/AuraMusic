@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchLyrics, LyricLine } from '../utils/lyricsService';
 
@@ -9,12 +9,9 @@ interface LyricsPlayerProps {
 const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
     const [lyrics, setLyrics] = useState<LyricLine[]>([]);
     const [activeIndex, setActiveIndex] = useState<number>(-1);
+    const [currentTime, setCurrentTime] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<boolean>(false);
-    const [yOffset, setYOffset] = useState<number>(0);
-    
-    const containerRef = useRef<HTMLDivElement>(null);
-    const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
 
     useEffect(() => {
         let isMounted = true;
@@ -51,6 +48,7 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
     useEffect(() => {
         const handleTimeUpdate = (e: any) => {
             const timeMs = e.detail.timeMs;
+            setCurrentTime(timeMs);
             
             if (lyrics.length > 0) {
                 let newIndex = -1;
@@ -71,25 +69,22 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
         return () => window.removeEventListener('player-time-update', handleTimeUpdate);
     }, [lyrics, activeIndex]);
 
-    // Calculate exact Y offset to center the active line
-    useEffect(() => {
-        if (activeIndex >= 0 && lineRefs.current[activeIndex] && containerRef.current) {
-            const activeEl = lineRefs.current[activeIndex];
-            const containerHeight = containerRef.current.clientHeight;
-            
-            // To perfectly center the element:
-            // The distance to translate is the middle of the container MINUS the middle of the element
-            const activeElCenter = activeEl.offsetTop + (activeEl.clientHeight / 2);
-            const targetY = (containerHeight / 2) - activeElCenter;
-            
-            setYOffset(targetY);
-        } else if (activeIndex === -1 && containerRef.current) {
-            // Default position if no lyrics are active yet (before song starts)
-            setYOffset(containerRef.current.clientHeight / 3);
-        }
-    }, [activeIndex, lyrics]);
-
     if (!songTitle) return null;
+
+    const activeLine = activeIndex >= 0 && lyrics.length > 0 ? lyrics[activeIndex] : null;
+    let words: string[] = [];
+    let highlightedIndex = -1;
+
+    if (activeLine) {
+        const nextLine = lyrics[activeIndex + 1];
+        // Calculate duration until next line, cap at 5 seconds so it doesn't drag slowly during instrumental breaks
+        const durationMs = nextLine ? nextLine.timeMs - activeLine.timeMs : 4000;
+        const highlightDuration = Math.min(durationMs, 5000); 
+        
+        const progress = Math.min(Math.max((currentTime - activeLine.timeMs) / highlightDuration, 0), 1);
+        words = activeLine.text.split(" ");
+        highlightedIndex = Math.floor(progress * words.length);
+    }
 
     return (
         <AnimatePresence mode="wait">
@@ -103,64 +98,44 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
                 </motion.div>
             ) : (
                 <motion.div 
-                    key="lyrics"
-                    initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -15, scale: 0.98 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="w-full flex justify-center -mt-2 mb-4 h-28 relative pointer-events-none z-0"
+                    key="lyrics-container"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-full flex justify-center -mt-2 mb-4 h-24 relative pointer-events-none z-0 overflow-hidden"
                 >
-                    <div 
-                        ref={containerRef}
-                        className="w-full h-full overflow-hidden"
-                        style={{
-                            maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-                            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)'
-                        }}
-                    >
-                        <motion.div 
-                            className="w-full flex flex-col items-center"
-                            animate={{ y: yOffset }}
-                            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                        >
-                            {lyrics.map((line, index) => {
-                                const isActive = index === activeIndex;
-                                const distance = Math.abs(index - activeIndex);
-                                
-                                let opacity = 0.05;
-                                let scale = 0.9;
-                                
-                                if (isActive) {
-                                    opacity = 1;
-                                    scale = 1.05;
-                                } else if (distance === 1) {
-                                    opacity = 0.5;
-                                    scale = 0.95;
-                                }
-
-                                return (
-                                    <motion.div
-                                        key={index}
-                                        ref={(el) => (lineRefs.current[index] = el)}
-                                        initial={false}
-                                        animate={{ opacity, scale }}
-                                        transition={{ duration: 0.5, ease: "easeOut" }}
-                                        className={`text-center py-0.5 w-full max-w-2xl origin-center flex items-center justify-center min-h-[32px]`}
-                                    >
-                                        <p 
-                                            className={`font-display tracking-tight transition-colors duration-500 ${
-                                                isActive 
-                                                ? 'text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]' 
-                                                : 'text-base sm:text-lg md:text-xl font-medium text-zinc-400'
-                                            }`}
-                                        >
-                                            {line.text || "♪"}
-                                        </p>
-                                    </motion.div>
-                                );
-                            })}
-                        </motion.div>
-                    </div>
+                    <AnimatePresence>
+                        {activeLine && (
+                            <motion.div 
+                                key={activeIndex}
+                                initial={{ opacity: 0, filter: 'blur(8px)', y: 15, scale: 0.95 }}
+                                animate={{ opacity: 1, filter: 'blur(0px)', y: 0, scale: 1 }}
+                                exit={{ opacity: 0, filter: 'blur(8px)', y: -15, scale: 1.05 }}
+                                transition={{ duration: 0.5, ease: "easeInOut" }}
+                                className="absolute top-0 w-full h-full flex items-center justify-center px-4 text-center"
+                            >
+                                <p className="font-display tracking-tight text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
+                                    {words.map((word, i) => {
+                                        const isHighlighted = i <= highlightedIndex;
+                                        return (
+                                            <span 
+                                                key={i} 
+                                                className={`transition-colors duration-200 inline-block mr-[0.3em] ${
+                                                    isHighlighted 
+                                                    ? 'text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]' 
+                                                    : 'text-white/20'
+                                                }`}
+                                            >
+                                                {word}
+                                            </span>
+                                        );
+                                    })}
+                                    {!activeLine.text && <span className="text-white/30">♪</span>}
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
             )}
         </AnimatePresence>
