@@ -31,7 +31,7 @@ const ImmersiveBackground: React.FC<ImmersiveBackgroundProps> = ({ videoId }) =>
 
                             {/* True WebGL Fluid Mesh Gradient */}
                             <div
-                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-50"
+                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-60"
                                 style={{
                                     filter: "blur(60px) brightness(0.5) saturate(1.5)",
                                 }}
