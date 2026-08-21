@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import backendUrl from '../utils/backendUrl';
 
 // WebGL shaders for fluid distortion
 const vertexShaderSource = `
@@ -163,10 +164,10 @@ export default function WebGLFluidBackground({ imageUrl }: WebGLFluidBackgroundP
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    // Load the image asynchronously
+    // Load the image asynchronously via the backend proxy
     const image = new Image();
     image.crossOrigin = "anonymous";
-    image.src = imageUrl;
+    image.src = `${backendUrl}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
     image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
