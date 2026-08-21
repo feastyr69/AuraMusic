@@ -20,20 +20,20 @@ const ImmersiveBackground: React.FC<ImmersiveBackgroundProps> = ({ videoId }) =>
                         className="absolute inset-0 w-full h-full pointer-events-none"
                     >
                         <div className="absolute inset-0 w-full h-full overflow-hidden">
-                            {/* Deep base layer for ambient color */}
+                            {/* Base layer for ambient color */}
                             <div
                                 className="absolute inset-[-20%] w-[140%] h-[140%] bg-center bg-cover opacity-20"
                                 style={{
                                     backgroundImage: `url(https://img.youtube.com/vi/${videoId}/hqdefault.jpg)`,
-                                    filter: "blur(80px) brightness(0.3) saturate(1.5)",
+                                    filter: "blur(80px) brightness(0.2) saturate(1.2)",
                                 }}
                             />
 
                             {/* True WebGL Fluid Mesh Gradient */}
-                            <div 
-                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-40 mix-blend-screen"
+                            <div
+                                className="absolute inset-[-20%] w-[140%] h-[140%] opacity-50"
                                 style={{
-                                    filter: "blur(70px) brightness(0.6) saturate(3)",
+                                    filter: "blur(60px) brightness(0.5) saturate(1.5)",
                                 }}
                             >
                                 <WebGLFluidBackground imageUrl={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} />
