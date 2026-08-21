@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx watch index.ts",
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts",
     "build": "tsc"
   },
   "author": "",
@@ -28,6 +29,7 @@
     "postgresql": "^0.0.1",
     "redis": "^5.11.0",
     "socket.io": "^4.8.3",
+    "tsx": "^4.23.12",
     "ytmusic-api": "^5.3.1"
   },
   "devDependencies": {
@@ -41,7 +43,6 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "nodemon": "^3.1.14",
-    "tsx": "^4.23.12",
     "typescript": "^7.0.2"
   }
 }
