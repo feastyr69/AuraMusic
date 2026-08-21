@@ -216,13 +216,13 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
                     }
                     <div ref={messageEndRef} />
                 </div>
-                <div className="relative flex flex-row" ref={pickerRef}>
+                <div className="relative flex flex-row items-center gap-2 mt-auto" ref={pickerRef}>
                     <AnimatePresence>
                         {showGiphy && <GiphyPicker onSelect={handleGifSelect} onClose={() => setShowGiphy(false)} />}
                     </AnimatePresence>
-                    <input type="text" enterKeyHint='send' placeholder="Type a message…" className="w-full px-2 sm:px-2.5 my-1 text-xs sm:text-sm rounded-xl border border-white/10 bg-white/3 text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-aura-400/40" value={messageObj.message} onChange={(e) => setMessageObj({ ...messageObj, message: e.target.value })} onKeyDown={handleKeyDown} />
-                    <button type="button" onClick={() => setShowGiphy((v) => !v)} aria-label="Open GIF picker" className={`absolute right-0 -translate-x-13 translate-y-1 rounded-xl p-2 ml-1 my-1 text-xs font-bold tracking-wider transition-colors shrink-0 ${showGiphy ? 'border-aura-400/60 text-aura-400 bg-aura-400/10' : 'border-white/12 text-zinc-400 hover:text-aura-400 hover:border-aura-400/40'}`}>GIF</button>
-                    <button type="button" className="py-2 px-2 m-1 ml-1 rounded-full border border-white/12 text-aura-400 hover:bg-aura-400/10 transition-colors" onClick={handleSend} aria-label="Send message"><IoSend className='size-5 sm:size-6' /></button>
+                    <input type="text" enterKeyHint='send' placeholder="Type a message…" className="flex-1 px-3 py-2 text-xs sm:text-sm rounded-xl border border-white/10 bg-white/3 text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-aura-400/40" value={messageObj.message} onChange={(e) => setMessageObj({ ...messageObj, message: e.target.value })} onKeyDown={handleKeyDown} />
+                    <button type="button" onClick={() => setShowGiphy((v) => !v)} aria-label="Open GIF picker" className={`px-3 py-2 rounded-xl border text-xs font-bold tracking-wider transition-colors shrink-0 ${showGiphy ? 'border-aura-400/60 text-aura-400 bg-aura-400/10' : 'border-white/12 text-zinc-400 hover:text-aura-400 hover:border-aura-400/40'}`}>GIF</button>
+                    <button type="button" className="p-2 rounded-full border border-white/12 text-aura-400 hover:bg-aura-400/10 transition-colors shrink-0" onClick={handleSend} aria-label="Send message"><IoSend className='size-5 sm:size-6' /></button>
                 </div>
             </div>
         </>
