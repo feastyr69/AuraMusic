@@ -252,7 +252,7 @@ export default function Jam() {
                         <div className='flex items-center h-[calc(100vh-14rem)]'>
                             <motion.div
                                 key="enter-room"
-                                className='group relative flex flex-col w-full max-w-85 mt-10 m-4 h-auto p-8 bg-white/4 hover:bg-white/3 rounded-2xl border border-white/12 shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-xl justify-between text-left transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40'
+                                className='group relative flex flex-col w-full max-w-85 mt-10 m-4 h-auto p-8 bg-white/4 hover:bg-white/3 rounded-2xl border border-white/12 shadow-2xl shadow-black/20 backdrop-blur-xl justify-between text-left transition-all duration-300 hover:shadow-2xl hover:shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40'
                                 initial={{ opacity: 0, y: 24, scale: 0.98 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: -16, scale: 0.98 }}
@@ -377,7 +377,7 @@ export default function Jam() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.24, duration: 0.35 }}
                             >
-                                <div className='w-full min-w-0 mb-15 mx-6 rounded-full border border-white/12 bg-white/4 backdrop-blur-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] px-4 py-3 flex items-center justify-between gap-2'>
+                                <div className='w-full min-w-0 mb-15 mx-6 rounded-full border border-white/12 bg-white/4 backdrop-blur-xl shadow-2xl shadow-black/20 px-4 py-3 flex items-center justify-between gap-2'>
                                     <div className='flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar pr-4 border-r-2 border-white/15'>
                                         {uniqueUsers.length === 0 ? (
                                             <div className='shrink-0 h-9 px-3 rounded-full bg-white/6 border border-white/12 text-zinc-300 text-sm flex items-center'>

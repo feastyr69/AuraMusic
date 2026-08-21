@@ -275,7 +275,7 @@ export default function Player({ roomId, userName, socket }) {
                     transition: rotation.x === 0 && rotation.y === 0 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-xl justify-between'
+                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 backdrop-blur-xl justify-between'
             >
                 {/* Hidden YouTube Player */}
                 <div className="absolute opacity-0 pointer-events-none">
