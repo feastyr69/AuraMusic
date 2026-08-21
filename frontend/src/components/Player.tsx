@@ -8,6 +8,7 @@ export default function Player({ roomId, userName, socket }) {
 
     const [rotation, setRotation] = useState({ x: 0, y: 0 });
     const cardRef = useRef(null);
+
     const [isPlaying, setIsPlaying] = useState(true);
     const [progress, setProgress] = useState(0);
     const [volume, setVolume] = useState(100);
@@ -278,7 +279,7 @@ export default function Player({ roomId, userName, socket }) {
                 className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 justify-between'
             >
                 {/* Hidden YouTube Player */}
-                <div className="absolute opacity-0 pointer-events-none">
+                <div className="fixed -top-[1000px] left-0 w-0 h-0 overflow-hidden opacity-0 pointer-events-none">
                     <YouTube videoId="" opts={{
                         height: '10',
                         width: '10',
@@ -336,7 +337,7 @@ export default function Player({ roomId, userName, socket }) {
                 </div>
 
                 {/* Playback Controls Area */}
-                <div className="flex flex-col w-full mt-auto">
+                <div className="flex flex-col w-full mt-auto relative z-10">
                     {/* Scrubber */}
                     <div className="w-full mb-4 px-2">
                         <div className="w-full h-[6px] bg-white/10 rounded-full relative overflow-hidden group">
