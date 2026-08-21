@@ -164,7 +164,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                                     <motion.div
                                         key={index}
                                         className='flex flex-row w-full items-center mb-1 p-1 hover:bg-white/10 rounded-lg hover:cursor-pointer transition duration-300'
-                                        onMouseDown={() => handleSearchClick(song)}
+                                        onPointerDown={(e) => { e.preventDefault(); handleSearchClick(song); }}
                                         whileHover={{ x: 2 }}
                                         whileTap={{ scale: 0.99 }}
                                     >
