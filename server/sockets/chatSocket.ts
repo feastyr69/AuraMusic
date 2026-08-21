@@ -6,11 +6,11 @@ const skipLocks = new Map();
 
 const connectIO = (io) => {
     io.on("connection", (socket) => {
-        console.log("A user connected");
+
 
         //haath mat chhorna saath mat chhorna
         socket.on("keep-alive", (data) => {
-            console.log("Ping came at", data.timestamp);
+
         });
 
         //user join room
@@ -24,7 +24,7 @@ const connectIO = (io) => {
             socket.avatarUrl = avatarUrl;
             await joinUser(roomId, sessionId, userName, avatarUrl);
 
-            console.log(`User ${socket.id} joined room ${roomId}`);
+
             if (!skipLocks.get(userName + roomId)) {
                 socket.to(roomId).emit("receive-message", { message: `${userName} has joined the room`, sender: "System" });
                 await saveMessage(roomId, { message: `${userName} has joined the room`, sender: "System" });
@@ -68,7 +68,7 @@ const connectIO = (io) => {
 
         //user next song
         socket.on("next-song", async (roomId, currentVideoId) => {
-            console.log("next song request from room", roomId);
+
             if (skipLocks.get(roomId)) {
                 return;
             }
@@ -82,8 +82,7 @@ const connectIO = (io) => {
             }
 
             const data = await nextSong(roomId);
-            console.log("next song");
-            console.log(data);
+
             io.to(roomId).emit("queue-results", data);
             io.to(roomId).emit("current-song", data[0] || null);
             if (data[0]) {
@@ -132,7 +131,7 @@ const connectIO = (io) => {
 
         //user request sync
         socket.on("request-sync", async (roomId) => {
-            console.log("request sync from room", roomId);
+
             const totalSockets = await io.in(roomId).fetchSockets();
             if (totalSockets.length > 1) {
                 const proxySocket = totalSockets.find(s => s.id !== socket.id);

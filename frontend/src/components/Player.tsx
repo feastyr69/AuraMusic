@@ -8,6 +8,7 @@ export default function Player({ roomId, userName, socket }) {
 
     const [rotation, setRotation] = useState({ x: 0, y: 0 });
     const cardRef = useRef(null);
+
     const [isPlaying, setIsPlaying] = useState(true);
     const [progress, setProgress] = useState(0);
     const [volume, setVolume] = useState(100);
@@ -63,7 +64,7 @@ export default function Player({ roomId, userName, socket }) {
     const progressInterval = useRef(null);
     const onReady = (event) => {
         playerRef.current = event.target;
-        console.log('just joined, requesting sync')
+
         playerRef.current.setPlaybackQuality('small');
         isPlayingRef.current = true;
         setIsPlayerReady(true);
@@ -168,7 +169,7 @@ export default function Player({ roomId, userName, socket }) {
 
     useEffect(() => {
         if (!isPlayerReady) return;
-        console.log('player ready');
+
 
         socket.emit('request-sync', roomId);
         socket.emit('get-current-song', roomId);
@@ -188,7 +189,7 @@ export default function Player({ roomId, userName, socket }) {
         });
 
         socket.on('current-song', (data) => {
-            console.log('song came', data);
+
             if (!data) {
                 setCurrentSong(null);
                 if (isPlayerReadyRef.current) playerRef.current?.cueVideoById?.({ videoId: "" });
@@ -201,7 +202,7 @@ export default function Player({ roomId, userName, socket }) {
         })
 
         socket.on('receive-sync-song', (data) => {
-            console.log("receive-sync-song", data);
+
             const { videoId, isPlaying: syncIsPlaying, songData, timestamp } = data;
 
             // latency compensation
@@ -243,14 +244,16 @@ export default function Player({ roomId, userName, socket }) {
         if (!isPlayerReady || !currentSong) return;
         if (isPlayingRef.current) {
             progressInterval.current = setInterval(() => {
-                setProgress(playerRef.current.getCurrentTime());
+                const currentTime = playerRef.current.getCurrentTime();
+                setProgress(currentTime);
+                window.dispatchEvent(new CustomEvent('player-time-update', { detail: { timeMs: currentTime * 1000 } }));
                 const state = playerRef.current.getPlayerState();
                 if (state === 0) {
                     clearInterval(progressInterval.current);
                     setIsPlaying(false);
                     socket.emit('next-song', roomId, currentSong.videoId);
                 }
-            }, 1000);
+            }, 250);
         } else {
             clearInterval(progressInterval.current);
         }
@@ -270,13 +273,13 @@ export default function Player({ roomId, userName, socket }) {
                 tabIndex={0}
                 style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: rotation.x === 0 && rotation.y === 0 ? 'transform 0.5s ease-out' : 'transform 0.1s ease-out',
+                    transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-xl justify-between'
+                className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 justify-between'
             >
                 {/* Hidden YouTube Player */}
-                <div className="absolute opacity-0 pointer-events-none">
+                <div className="fixed -top-[1000px] left-0 w-0 h-0 overflow-hidden opacity-0 pointer-events-none">
                     <YouTube videoId="" opts={{
                         height: '10',
                         width: '10',
@@ -334,7 +337,10 @@ export default function Player({ roomId, userName, socket }) {
                 </div>
 
                 {/* Playback Controls Area */}
-                <div className="flex flex-col w-full mt-auto">
+                <div 
+                    className="flex flex-col w-full mt-auto relative z-10"
+                    onMouseMove={(e) => e.stopPropagation()}
+                >
                     {/* Scrubber */}
                     <div className="w-full mb-4 px-2">
                         <div className="w-full h-[6px] bg-white/10 rounded-full relative overflow-hidden group">
@@ -371,7 +377,7 @@ export default function Player({ roomId, userName, socket }) {
                                 <IoVolumeHigh size={24} />
                             </button>
                             {showVolume && (
-                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center bg-zinc-900/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl"
+                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center bg-zinc-900/90 border border-white/10 rounded-xl shadow-xl"
                                     style={{ width: 36, height: 120 }}>
                                     <input
                                         type="range"

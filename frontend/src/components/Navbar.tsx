@@ -16,7 +16,7 @@ export default function Navbar() {
 
   return (
     <header className="w-full flex justify-center items-center h-24 md:h-28 pt-4 relative z-20 px-4">
-      <div className="w-full max-w-6xl flex justify-between items-center min-h-14 md:min-h-16 bg-white/[0.04] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.35)] px-5 md:px-8 border border-white/[0.08] rounded-full">
+      <div className="w-full max-w-6xl flex justify-between items-center min-h-14 md:min-h-16 bg-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/20 px-5 md:px-8 border border-white/[0.08] rounded-full">
         <Link to="/" className="flex flex-col items-start justify-center gap-0.5 shrink-0">
           <span className="font-display font-semibold text-xl md:text-2xl tracking-tight text-zinc-100">
             aura<span className="text-aura-400">.</span>

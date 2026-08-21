@@ -17,7 +17,7 @@ const searchSong = async (req, res) => {
 
         return res.status(200).json(data);
     } catch (err) {
-        console.log("error aya");
+
         return res.status(500).json([]);
     }
 }
@@ -29,7 +29,7 @@ const cueSong = async (roomId, songObj) => {
         await redisClient.expire(cueKey, 60 * 60);
         return songObj;
     } catch (err) {
-        console.log(err);
+        console.error("Error searching song:", err);
         return [];
     }
 }
@@ -40,7 +40,7 @@ const getQueue = async (roomId) => {
         const data = await redisClient.lRange(cueKey, 0, -1);
         return data.map((item) => JSON.parse(item));
     } catch (err) {
-        console.log(err);
+        console.error("Error cueing song:", err);
         return [];
     }
 }
@@ -52,7 +52,7 @@ const nextSong = async (roomId) => {
         const data = await getQueue(roomId);
         return data;
     } catch (err) {
-        console.log(err);
+        console.error("Error moving to next song:", err);
         return [];
     }
 }
@@ -65,7 +65,7 @@ const removeSong = async (roomId, index) => {
         const data = await getQueue(roomId);
         return data;
     } catch (err) {
-        console.log(err);
+        console.error("Error removing song:", err);
         return [];
     }
 }

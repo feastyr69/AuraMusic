@@ -1,9 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const db = require('../database/db');
-const dotenv = require('dotenv');
-dotenv.config({ path: "../.env" });
-
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'client_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'client_secret',
@@ -11,7 +8,7 @@ passport.use(new GoogleStrategy({
     proxy: true
 },
     async function (accessToken, refreshToken, profile, cb) {
-        console.log("GOOGLE PROFILE DUMP:", JSON.stringify(profile, null, 2));
+
         try {
             const avatarUrl = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
             let googleName = profile.displayName;
@@ -60,7 +57,7 @@ passport.use(new GoogleStrategy({
 ));
 
 passport.serializeUser((user, done) => {
-    console.log("SERIALIZING USER:", user.id);
+
     done(null, user.id); // Storing just the ID in the cookie session
 });
 

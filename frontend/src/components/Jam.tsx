@@ -15,6 +15,8 @@ import backendUrl from '../utils/backendUrl';
 import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
 import { AuthContext } from '../context/AuthContext';
+import ImmersiveBackground from './ImmersiveBackground';
+import LyricsPlayer from './LyricsPlayer';
 
 let sessionId = localStorage.getItem("sessionId");
 let userName = localStorage.getItem("userName");
@@ -50,6 +52,7 @@ export default function Jam() {
     const [roomData, setRoomData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [roomUsers, setRoomUsers] = useState([]);
+    const [currentSong, setCurrentSong] = useState<any>(null);
     const [inviteCopied, setInviteCopied] = useState(false);
     const [activeTab, setActiveTab] = useState(1); // 0=Chat, 1=Player, 2=Queue
     const [connectionStatus, setConnectionStatus] = useState('connected'); // 'connected' | 'disconnected' | 'reconnecting'
@@ -73,7 +76,7 @@ export default function Jam() {
     // Auto-reconnect: re-join room whenever the socket reconnects
     useEffect(() => {
         const handleConnect = () => {
-            console.log("Socket connected");
+
             setConnectionStatus('connected');
             // Re-join room on every reconnect (but not the very first connection —
             // Chat.jsx handles the initial join-room on mount)
@@ -111,7 +114,7 @@ export default function Jam() {
     }, []);
 
     useEffect(() => {
-        console.log("Checking room...");
+
         const checkRoom = async () => {
             const res = await apiBaseURL.get(`/room/${roomId}`);
             //console.log(res.data);
@@ -120,7 +123,7 @@ export default function Jam() {
             }
             await user;
             if (user) {
-                console.log(user);
+
                 setUserName(user.google_name || user.username);
                 localStorage.setItem("userName", user.google_name || user.username);
             }
@@ -145,13 +148,18 @@ export default function Jam() {
 
     useEffect(() => {
         const handleUpdateUsers = (users = []) => {
-            //console.log("Users updated:", users);
+
             setRoomUsers(Array.isArray(users) ? users : []);
+        };
+        const handleCurrentSong = (data) => {
+            setCurrentSong(data);
         };
 
         socket.on("update-users", handleUpdateUsers);
+        socket.on("current-song", handleCurrentSong);
         return () => {
             socket.off("update-users", handleUpdateUsers);
+            socket.off("current-song", handleCurrentSong);
         };
     }, []);
 
@@ -197,7 +205,7 @@ export default function Jam() {
 
     const reconnectBanner = connectionStatus !== 'connected' && (
         <div
-            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full border backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-xs font-semibold uppercase tracking-widest transition-all duration-500 ${connectionStatus === 'reconnecting'
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full border shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-xs font-semibold uppercase tracking-widest transition-all duration-500 ${connectionStatus === 'reconnecting'
                 ? 'border-amber-500/40 bg-amber-500/10 text-amber-400'
                 : 'border-red-500/40 bg-red-500/10 text-red-400'
                 }`}
@@ -210,6 +218,7 @@ export default function Jam() {
 
     return (
         <>
+            {showPlayer && <ImmersiveBackground videoId={currentSong?.videoId} />}
             <Navbar />
             {reconnectBanner}
             <div className="relative w-full flex justify-center overflow-hidden">
@@ -243,7 +252,7 @@ export default function Jam() {
                         <div className='flex items-center h-[calc(100vh-14rem)]'>
                             <motion.div
                                 key="enter-room"
-                                className='group relative flex flex-col w-full max-w-85 mt-10 m-4 h-auto p-8 bg-white/4 hover:bg-white/3 rounded-2xl border border-white/12 shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-xl justify-between text-left transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40'
+                                className='group relative flex flex-col w-full max-w-85 mt-10 m-4 h-auto p-8 bg-white/4 hover:bg-white/3 rounded-2xl border border-white/12 shadow-2xl shadow-black/20 justify-between text-left transition-all duration-300 hover:shadow-2xl hover:shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40'
                                 initial={{ opacity: 0, y: 24, scale: 0.98 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: -16, scale: 0.98 }}
@@ -356,13 +365,19 @@ export default function Jam() {
                                     <Queue roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
                                 </motion.div>
                             </motion.div>
+                            
+                            {/* Lyrics Player below player and above users list */}
+                            <div className="w-full max-w-4xl px-4 z-10">
+                                <LyricsPlayer songTitle={currentSong ? `${currentSong.artist?.name || ""} ${currentSong.name || ""}`.trim() : null} />
+                            </div>
+
                             <motion.div
                                 className='flex w-full max-w-3xl items-center gap-3'
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.24, duration: 0.35 }}
                             >
-                                <div className='w-full min-w-0 mb-15 mx-6 rounded-full border border-white/12 bg-white/4 backdrop-blur-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] px-4 py-3 flex items-center justify-between gap-2'>
+                                <div className='w-full min-w-0 mb-15 mx-6 rounded-full border border-white/12 bg-white/4 shadow-2xl shadow-black/20 px-4 py-3 flex items-center justify-between gap-2'>
                                     <div className='flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar pr-4 border-r-2 border-white/15'>
                                         {uniqueUsers.length === 0 ? (
                                             <div className='shrink-0 h-9 px-3 rounded-full bg-white/6 border border-white/12 text-zinc-300 text-sm flex items-center'>

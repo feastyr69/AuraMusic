@@ -115,7 +115,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     transition: 'transform 0.5s ease-out',
                     transformStyle: 'preserve-3d'
                 }}
-                className='flex flex-col w-78 sm:w-80 h-120 p-3 sm:p-5 rounded-xl shadow-[0_12px_48px_rgba(0,0,0,0.35)] bg-white/4 backdrop-blur-xl border border-white/10'>
+                className='flex flex-col w-78 sm:w-80 h-120 p-3 sm:p-5 rounded-xl shadow-2xl shadow-black/20 bg-white/4 border border-white/10'>
                 <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 font-medium">Add to queue</p>
                 <div className='relative w-full h-full'>
                     <AnimatePresence>
@@ -146,7 +146,7 @@ export default function Queue({ roomId, sessionId, userName, socket }) {
                     </div>
 
                     {isFocused && (isSearching || searchResults.length > 0) && (
-                        <div className='absolute top-12 h-80 overflow-y-auto left-0 w-full flex flex-col mt-2 bg-zinc-950/95 border border-white/10 backdrop-blur-xl p-2 px-3 rounded-xl z-50 shadow-xl scrollbar'>
+                        <div className='absolute top-12 h-80 overflow-y-auto left-0 w-full flex flex-col mt-2 bg-zinc-950/95 border border-white/10 p-2 px-3 rounded-xl z-50 shadow-xl scrollbar'>
                             {isSearching ? (
                                 <div className="flex flex-col gap-2 p-1">
                                     {[1, 2, 3, 4, 5].map(i => (
