@@ -17,6 +17,7 @@ import { IoPersonAdd } from 'react-icons/io5'
 import { AuthContext } from '../context/AuthContext';
 import ImmersiveBackground from './ImmersiveBackground';
 import LyricsPlayer from './LyricsPlayer';
+import RoomSettings, { AnySettingItem } from './RoomSettings';
 
 let sessionId = localStorage.getItem("sessionId");
 let userName = localStorage.getItem("userName");
@@ -27,7 +28,7 @@ const userInfo = {
 }
 
 const socket = io(backendUrl, {
-    transports: ['websocket', 'polling'], // skip polling, connect straight to WS — avoids Render proxy timeout during upgrade
+    transports: ['websocket', 'polling'],
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
@@ -56,6 +57,18 @@ export default function Jam() {
     const [inviteCopied, setInviteCopied] = useState(false);
     const [activeTab, setActiveTab] = useState(1); // 0=Chat, 1=Player, 2=Queue
     const [connectionStatus, setConnectionStatus] = useState('connected'); // 'connected' | 'disconnected' | 'reconnecting'
+    const [isLyricsEnabled, setIsLyricsEnabled] = useState(() => {
+        const saved = localStorage.getItem("setting_lyricsEnabled");
+        return saved !== null ? saved === "true" : true;
+    });
+    const [lyricsDelay, setLyricsDelay] = useState(() => {
+        const saved = localStorage.getItem("setting_lyricsDelay");
+        return saved !== null ? parseFloat(saved) : 0;
+    });
+    const [isDynamicBgEnabled, setIsDynamicBgEnabled] = useState(() => {
+        const saved = localStorage.getItem("setting_dynamicBgEnabled");
+        return saved !== null ? saved === "true" : true;
+    });
     const { user } = useContext(AuthContext);
     const scrollContainerRef = useRef(null);
     const chatRef = useRef(null);
@@ -67,6 +80,18 @@ export default function Jam() {
     const avatarUrlRef = useRef(null);
     const sessionIdRef = useRef(sessionId);
     const hasJoinedRef = useRef(false); // track if we've ever joined (skip first connect)
+
+    useEffect(() => {
+        localStorage.setItem("setting_lyricsEnabled", isLyricsEnabled.toString());
+    }, [isLyricsEnabled]);
+
+    useEffect(() => {
+        localStorage.setItem("setting_lyricsDelay", lyricsDelay.toString());
+    }, [lyricsDelay]);
+
+    useEffect(() => {
+        localStorage.setItem("setting_dynamicBgEnabled", isDynamicBgEnabled.toString());
+    }, [isDynamicBgEnabled]);
 
     // Keep refs in sync
     useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
@@ -218,7 +243,7 @@ export default function Jam() {
 
     return (
         <>
-            {showPlayer && <ImmersiveBackground videoId={currentSong?.videoId} />}
+            {showPlayer && isDynamicBgEnabled && <ImmersiveBackground videoId={currentSong?.videoId} />}
             <Navbar />
             {reconnectBanner}
             <div className="relative w-full flex justify-center overflow-hidden">
@@ -365,19 +390,21 @@ export default function Jam() {
                                     <Queue roomId={roomId} sessionId={sessionId} userName={userName} socket={socket} />
                                 </motion.div>
                             </motion.div>
-                            
+
                             {/* Lyrics Player below player and above users list */}
-                            <div className="w-full max-w-4xl px-4 z-10">
-                                <LyricsPlayer songTitle={currentSong ? `${currentSong.artist?.name || ""} ${currentSong.name || ""}`.trim() : null} />
-                            </div>
+                            {isLyricsEnabled && (
+                                <div className="w-full max-w-4xl px-4 z-10">
+                                    <LyricsPlayer songTitle={currentSong ? `${currentSong.artist?.name || ""} ${currentSong.name || ""}`.trim() : null} delayMs={lyricsDelay * 1000} />
+                                </div>
+                            )}
 
                             <motion.div
-                                className='flex w-full max-w-3xl items-center gap-3'
+                                className='flex w-full max-w-3xl items-center gap-3 px-6 mb-15 mx-auto'
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.24, duration: 0.35 }}
                             >
-                                <div className='w-full min-w-0 mb-15 mx-6 rounded-full border border-white/12 bg-white/4 shadow-2xl shadow-black/20 px-4 py-3 flex items-center justify-between gap-2'>
+                                <div className='flex-1 min-w-0 rounded-full border border-white/12 bg-white/4 shadow-2xl shadow-black/20 px-4 py-3 flex items-center justify-between gap-2'>
                                     <div className='flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar pr-4 border-r-2 border-white/15'>
                                         {uniqueUsers.length === 0 ? (
                                             <div className='shrink-0 h-9 px-3 rounded-full bg-white/6 border border-white/12 text-zinc-300 text-sm flex items-center'>
@@ -412,6 +439,45 @@ export default function Jam() {
                                             {inviteCopied ? "Copied" : "Invite"}
                                         </span>
                                     </button>
+                                </div>
+                                
+                                <div className='shrink-0 rounded-full border border-white/12 bg-white/4 shadow-2xl shadow-black/20 p-2 flex items-center justify-center'>
+                                    <RoomSettings settings={[
+                                        {
+                                            id: 'lyricsSection',
+                                            label: 'Lyrics',
+                                            description: 'Configure lyrics visibility and synchronization.',
+                                            type: 'section',
+                                            children: [
+                                                {
+                                                    id: 'lyricsSync',
+                                                    label: 'Show Lyrics',
+                                                    description: 'Display synchronized lyrics below the music player.',
+                                                    type: 'toggle',
+                                                    value: isLyricsEnabled,
+                                                    onChange: setIsLyricsEnabled
+                                                },
+                                                ...(isLyricsEnabled ? [{
+                                                    id: 'lyricsDelay',
+                                                    label: 'Lyrics Delay',
+                                                    description: 'Fine-tune the timing of the lyrics (in seconds).',
+                                                    type: 'stepper',
+                                                    value: lyricsDelay,
+                                                    step: 0.5,
+                                                    onChange: setLyricsDelay,
+                                                    formatValue: (val: number) => `${val > 0 ? '+' : ''}${val}s`
+                                                } as AnySettingItem] : [])
+                                            ]
+                                        },
+                                        {
+                                            id: 'dynamicBackground',
+                                            label: 'Dynamic Background',
+                                            description: 'Immersive animated background that reacts to the music.',
+                                            type: 'toggle',
+                                            value: isDynamicBgEnabled,
+                                            onChange: setIsDynamicBgEnabled
+                                        }
+                                    ]} />
                                 </div>
                             </motion.div>
                             <Footer />

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchLyrics, LyricLine } from '../utils/lyricsService';
 
 interface LyricsPlayerProps {
     songTitle?: string | null;
+    delayMs?: number;
 }
 
-const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
+const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle, delayMs = 0 }) => {
     const [lyrics, setLyrics] = useState<LyricLine[]>([]);
     const [activeIndex, setActiveIndex] = useState<number>(-1);
     const [currentTime, setCurrentTime] = useState<number>(0);
@@ -46,9 +47,12 @@ const LyricsPlayer: React.FC<LyricsPlayerProps> = ({ songTitle }) => {
         return () => { isMounted = false; };
     }, [songTitle]);
 
+    const delayMsRef = useRef(delayMs);
+    useEffect(() => { delayMsRef.current = delayMs; }, [delayMs]);
+
     useEffect(() => {
         const handleTimeUpdate = (e: any) => {
-            const timeMs = e.detail.timeMs;
+            const timeMs = e.detail.timeMs + delayMsRef.current;
             setCurrentTime(timeMs);
 
             if (lyrics.length > 0) {

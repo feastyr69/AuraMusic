@@ -277,23 +277,6 @@ export default function Player({ roomId, userName, socket }) {
                 }}
                 className='flex flex-col w-full h-120 p-6 bg-white/[0.04] rounded-xl border border-white/[0.1] shadow-2xl shadow-black/20 justify-between'
             >
-                {/* Hidden YouTube Player */}
-                <div className="fixed -top-[1000px] left-0 w-0 h-0 overflow-hidden opacity-0 pointer-events-none">
-                    <YouTube videoId="" opts={{
-                        height: '10',
-                        width: '10',
-                        playerVars: {
-                            autoplay: 1,
-                            playsinline: 1,
-                            controls: 0,
-                            disablekb: 1,
-                        }
-                    }}
-                        onReady={onReady}
-                        onStateChange={handleStateChange}
-                    />
-                </div>
-
                 {/* Header */}
                 <div className="flex justify-center items-center w-full mb-4">
                     <p className="text-xs uppercase tracking-widest text-zinc-500 font-semibold">Now playing</p>
@@ -301,21 +284,42 @@ export default function Player({ roomId, userName, socket }) {
 
                 {/* Album Art Container */}
                 <div className="w-full flex-1 relative rounded-xl overflow-hidden shadow-2xl mb-6 group border border-white/[0.08] max-h-64 mx-auto max-w-47 bg-zinc-900/60">
-                    {isBuffering && <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-2 border-zinc-400 border-t-aura-400 z-100"></div>
+                    {/* YouTube Player embedded behind the cover art for iOS Safari compatibility */}
+                    <div className="absolute inset-0 z-0 pointer-events-none opacity-1">
+                        <YouTube videoId="" opts={{
+                            height: '100%',
+                            width: '100%',
+                            playerVars: {
+                                autoplay: 1,
+                                playsinline: 1,
+                                controls: 0,
+                                disablekb: 1,
+                            }
+                        }}
+                            onReady={onReady}
+                            onStateChange={handleStateChange}
+                            className="w-full h-full"
+                        />
+                    </div>
+                    
+                    {isBuffering && <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-2 border-zinc-400 border-t-aura-400"></div>
                     </div>}
+                    
                     {playbackError && (
-                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm text-center px-4 gap-2">
+                        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm text-center px-4 gap-2">
                             <span className="text-rose-400 text-2xl">⚠</span>
                             <p className="text-rose-300 text-xs font-semibold tracking-wide leading-snug">{playbackError}</p>
                         </div>
                     )}
+                    
                     {currentSong && <img
                         src={`https://i.ytimg.com/vi/${currentSong.videoId}/maxresdefault.jpg`}
                         alt="Album Art"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
+                        className="relative z-10 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-100"
                     />}
-                    <div className="absolute flex items-center justify-center inset-0 bg-linear-to-t from-black/15 to-transparent pointer-events-none">
+                    
+                    <div className="absolute flex items-center justify-center inset-0 bg-linear-to-t from-black/15 to-transparent pointer-events-none z-10">
                         {!currentSong && <PiVinylRecordLight className="text-aura-400/40" size={120} />}
                     </div>
                 </div>
