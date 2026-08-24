@@ -15,6 +15,7 @@ import backendUrl from '../utils/backendUrl';
 import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
 import { AuthContext } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 import ImmersiveBackground from '../components/backgrounds/ImmersiveBackground';
 import LyricsPlayer from '../components/features/LyricsPlayer';
 import RoomSettings, { AnySettingItem } from '../components/features/RoomSettings';
@@ -189,14 +190,20 @@ export default function Jam() {
             setRoomData(null);
             setShowPlayer(false);
         };
+        const handleAlreadyInRoom = () => {
+            toast.error("You are already active in another room. Please leave it before joining this one.", { duration: 5000 });
+            navigate('/');
+        };
 
         socket.on("update-users", handleUpdateUsers);
         socket.on("current-song", handleCurrentSong);
         socket.on("room-deleted", handleRoomDeleted);
+        socket.on("already-in-room", handleAlreadyInRoom);
         return () => {
             socket.off("update-users", handleUpdateUsers);
             socket.off("current-song", handleCurrentSong);
             socket.off("room-deleted", handleRoomDeleted);
+            socket.off("already-in-room", handleAlreadyInRoom);
         };
     }, []);
 

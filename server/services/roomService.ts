@@ -7,7 +7,15 @@ const getRoomKey = (roomId: string, suffix: string) => `room:${roomId}:${suffix}
 
 export const createRoom = async (req: Request, res: Response) => {
     try {
-        const { roomName, createdBy } = req.body || {};
+        const { roomName, createdBy, sessionId } = req.body || {};
+        
+        if (sessionId) {
+            const existingRoom = await redisClient.get(`session:${sessionId}:room`);
+            if (existingRoom) {
+                return res.status(400).json({ status: "failed", message: "You are already in a room. Please leave it before creating a new one." });
+            }
+        }
+
         const roomId = nanoid(10);
         
         await redisClient.zAdd("rooms", { score: Date.now(), value: roomId });
@@ -70,7 +78,7 @@ export const getActiveRoomsList = async (req: Request, res: Response) => {
         for (const id of roomIds) {
             const info = await getRoomInfoData(id);
             if (info.success && info.type === "public") {
-                const users = await redisClient.lRange(getRoomKey(id, 'users'), 0, -1);
+                const users = await getUsersInRoom(id);
                 activeRooms.push({ ...info, userCount: users.length });
             } else if (!info.success) {
                 await redisClient.zRem("rooms", id);
@@ -100,6 +108,8 @@ export const joinUser = async (roomId: string, userId: string, userName: string,
     try {
         const user: User = { userId, userName, avatarUrl };
         await redisClient.rPush(getRoomKey(roomId, 'users'), JSON.stringify(user));
+        await redisClient.set(`session:${userId}:room`, roomId);
+        await redisClient.expire(`session:${userId}:room`, 3 * 60 * 60);
     } catch(err) {
         console.error("Error joining user:", err);
     }
@@ -108,7 +118,12 @@ export const joinUser = async (roomId: string, userId: string, userName: string,
 export const getUsersInRoom = async (roomId: string): Promise<User[]> => {
     try {
         const rawUsers = await redisClient.lRange(getRoomKey(roomId, 'users'), 0, -1);
-        return rawUsers.map((user: string) => JSON.parse(user));
+        const parsedUsers = rawUsers.map((user: string) => JSON.parse(user));
+        
+        const uniqueUsers = parsedUsers.filter((user: User, index: number, self: User[]) =>
+            index === self.findIndex((u) => u.userId === user.userId)
+        );
+        return uniqueUsers;
     } catch(err) {
         console.error("Error getting users in room:", err);
         return [];
@@ -119,7 +134,17 @@ export const removeUser = async (roomId: string, userId: string, userName: strin
     try {
         const user: User = { userId, userName, avatarUrl };
         await redisClient.lRem(getRoomKey(roomId, 'users'), 1, JSON.stringify(user));
+        
+        const users = await getUsersInRoom(roomId);
+        if (!users.find(u => u.userId === userId)) {
+            await redisClient.del(`session:${userId}:room`);
+        }
     } catch(err) {
         console.error("Error removing user:", err);
     }
+}
+
+export const isUserInDifferentRoom = async (sessionId: string, roomId: string) => {
+    const existingRoom = await redisClient.get(`session:${sessionId}:room`);
+    return existingRoom && existingRoom !== roomId;
 }

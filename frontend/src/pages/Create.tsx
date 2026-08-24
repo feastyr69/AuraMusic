@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import generateUserName from '../utils/nameGenerator';
 import { AnimatePresence, motion } from 'motion/react';
+import toast from 'react-hot-toast';
 
 const Create = () => {
     const navigate = useNavigate();
@@ -32,13 +33,29 @@ const Create = () => {
         setLoading(true);
         setIsModalOpen(false);
         const userName = user?.google_name || user?.username || localStorage.getItem("userName") || generateUserName();
-        const response = await apiBaseURL.post("/create", {
-            roomName: roomName || "Public Room",
-            createdBy: userName
-        });
-        const roomData = response.data;
-        navigate(`/jam/${roomData.roomId}`);
-        setLoading(false);
+        let sessionId = localStorage.getItem("sessionId");
+        if (!sessionId) {
+            sessionId = crypto.randomUUID();
+            localStorage.setItem("sessionId", sessionId);
+        }
+
+        try {
+            const response = await apiBaseURL.post("/create", {
+                roomName: roomName || "Public Room",
+                createdBy: userName,
+                sessionId: sessionId
+            });
+            const roomData = response.data;
+            navigate(`/jam/${roomData.roomId}`);
+        } catch (error: any) {
+            if (error.response && error.response.status === 400) {
+                toast.error(error.response.data.message, { duration: 5000 });
+            } else {
+                toast.error("Failed to create room. Please try again.");
+            }
+        } finally {
+            setLoading(false);
+        }
     }
     return (
         <>

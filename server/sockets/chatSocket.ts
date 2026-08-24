@@ -1,6 +1,6 @@
 const { getRoomHistory, saveMessage } = require("../services/chatService");
 const { cueSong, getQueue, nextSong, removeSong } = require("../services/ytMusic");
-const { joinUser, getUsersInRoom, removeUser, deleteRoom } = require("../services/roomService");
+const { joinUser, getUsersInRoom, removeUser, deleteRoom, isUserInDifferentRoom } = require("../services/roomService");
 
 const skipLocks = new Map();
 
@@ -16,6 +16,12 @@ const connectIO = (io) => {
         //user join room
         socket.on("join-room", async (clientData) => {
             const { roomId, sessionId, userName, avatarUrl, joinedAt } = clientData;
+            
+            if (await isUserInDifferentRoom(sessionId, roomId)) {
+                socket.emit("already-in-room");
+                return;
+            }
+
             socket.join(roomId);
 
             socket.roomId = roomId;
