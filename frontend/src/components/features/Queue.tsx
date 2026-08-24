@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { apiBaseURL } from '../axiosInstance';
+import { apiBaseURL } from '../../axiosInstance';
 import { FaSearch } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import { AnimatePresence, motion } from 'motion/react';

@@ -109,6 +109,10 @@ const connectIO = (io) => {
         });
 
 
+        socket.on("preview-room", (roomId) => {
+            socket.join(roomId);
+        });
+
         //user disconnect
         socket.on("disconnect", async () => {
             console.log(`User disconnected: ${socket.userName} from ${socket.roomId}`);
@@ -119,6 +123,7 @@ const connectIO = (io) => {
                 
                 if (users.length === 0) {
                     await deleteRoom(socket.roomId);
+                    io.to(socket.roomId).emit("room-deleted");
                 } else {
                     io.to(socket.roomId).emit("update-users", users);
                     const leaveMsg = { message: `${socket.userName} has left the room`, sender: "System" };

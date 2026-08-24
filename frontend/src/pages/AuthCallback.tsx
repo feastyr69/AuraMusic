@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Navbar from './Navbar';
+import Navbar from '../components/common/Navbar';
 import { AuthContext } from '../context/AuthContext';
 
 export default function AuthCallback() {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchLyrics, LyricLine } from '../utils/lyricsService';
+import { fetchLyrics, LyricLine } from '../../utils/lyricsService';
 
 interface LyricsPlayerProps {
     songTitle?: string | null;

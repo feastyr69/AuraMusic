@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import backendUrl from '../utils/backendUrl';
+import backendUrl from '../../utils/backendUrl';
 
 // WebGL shaders for fluid distortion
 const vertexShaderSource = `

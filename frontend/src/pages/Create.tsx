@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { IoMdAdd, IoMdLogIn, IoMdClose } from "react-icons/io";
-import Navbar from './Navbar'
+import Navbar from '../components/common/Navbar'
 import { apiBaseURL } from '../axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -92,7 +92,7 @@ const Create = () => {
                             <form onSubmit={createRoom} className="relative flex flex-col gap-6">
                                 <div className="flex flex-col gap-2">
                                     <label htmlFor="roomName" className="text-xs uppercase tracking-wider text-zinc-400 font-semibold">
-                                        Room Name:
+                                        Room Name (Optional):
                                     </label>
                                     <input
                                         id="roomName"
@@ -168,13 +168,13 @@ const Create = () => {
                     </div>
 
                     {/* Active Rooms Section */}
-                    {activeRooms.length > 0 && (
-                        <div className="w-full mt-16 pt-8 border-t border-white/10">
-                            <div className="flex items-center justify-between mb-8">
-                                <h2 className="font-display text-2xl font-semibold text-zinc-100 tracking-tight">Active Public Rooms</h2>
-                                <span className="text-xs uppercase tracking-widest text-aura-400 font-semibold">{activeRooms.length} Room(s)</span>
-                            </div>
+                    <div className="w-full mt-16 pt-8 border-t border-white/10">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="font-display text-2xl font-semibold text-zinc-100 tracking-tight">Active Public Rooms</h2>
+                            <span className="text-xs uppercase tracking-widest text-aura-400 font-semibold">{activeRooms.length} Room(s)</span>
+                        </div>
 
+                        {activeRooms.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {activeRooms.map((room) => (
                                     <div key={room.roomId} className="flex flex-col justify-between p-6 bg-white/[0.03] border border-white/[0.08] hover:border-aura-400/30 rounded-2xl transition-all duration-300 group hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
@@ -197,8 +197,14 @@ const Create = () => {
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 px-4 rounded-2xl border border-white/[0.04] bg-white/[0.02]">
+                                <p className="text-zinc-500 text-sm md:text-base text-center">
+                                    No public rooms are active right now. <br className="hidden md:block" /> Be the first to start a room and invite others!
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </>

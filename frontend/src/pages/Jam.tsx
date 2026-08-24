@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
-import Navbar from './Navbar'
-import Chat from './Chat'
-import Player from './Player'
-import Queue from './Queue'
-import Footer from './Footer';
+import Navbar from '../components/common/Navbar'
+import Chat from '../components/features/Chat'
+import Player from '../components/features/Player'
+import Queue from '../components/features/Queue'
+import Footer from '../components/common/Footer';
 import { useParams } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid';
 import generateUserName from '../utils/nameGenerator';
@@ -15,9 +15,9 @@ import backendUrl from '../utils/backendUrl';
 import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
 import { AuthContext } from '../context/AuthContext';
-import ImmersiveBackground from './ImmersiveBackground';
-import LyricsPlayer from './LyricsPlayer';
-import RoomSettings, { AnySettingItem } from './RoomSettings';
+import ImmersiveBackground from '../components/backgrounds/ImmersiveBackground';
+import LyricsPlayer from '../components/features/LyricsPlayer';
+import RoomSettings, { AnySettingItem } from '../components/features/RoomSettings';
 
 let sessionId = localStorage.getItem("sessionId");
 let userName = localStorage.getItem("userName");
@@ -172,19 +172,31 @@ export default function Jam() {
     }, [showPlayer]);
 
     useEffect(() => {
+        if (roomId) {
+            socket.emit("preview-room", roomId);
+        }
+    }, [roomId]);
+
+    useEffect(() => {
         const handleUpdateUsers = (users = []) => {
 
             setRoomUsers(Array.isArray(users) ? users : []);
         };
-        const handleCurrentSong = (data) => {
+        const handleCurrentSong = (data: any) => {
             setCurrentSong(data);
+        };
+        const handleRoomDeleted = () => {
+            setRoomData(null);
+            setShowPlayer(false);
         };
 
         socket.on("update-users", handleUpdateUsers);
         socket.on("current-song", handleCurrentSong);
+        socket.on("room-deleted", handleRoomDeleted);
         return () => {
             socket.off("update-users", handleUpdateUsers);
             socket.off("current-song", handleCurrentSong);
+            socket.off("room-deleted", handleRoomDeleted);
         };
     }, []);
 

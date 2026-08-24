@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Navbar from '../components/common/Navbar';
 import { apiBaseURL } from '../axiosInstance';
 import backendUrl from '../utils/backendUrl';
-import Navbar from './Navbar';
 import { FcGoogle } from 'react-icons/fc';
+import { AuthContext } from '../context/AuthContext';
 
-export default function Register() {
+export default function Login() {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,16 +23,17 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await apiBaseURL.post("/auth/register", formData);
+      const response = await apiBaseURL.post('/auth/login', formData);
       const data = response.data;
 
-      if (data.status) {
-        navigate('/login');
+      if (!data.status) {
+        throw new Error(data.message || 'Login failed');
       }
-      else {
-        setError(data.message);
-      }
+
+      await login(data.token);
+      navigate('/');
     } catch (err) {
+      console.error(err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -50,8 +53,8 @@ export default function Register() {
         <div className="w-full max-w-sm flex flex-col gap-6 p-8 rounded-3xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] shadow-[0_12px_48px_rgba(0,0,0,0.35)] mx-auto">
           <div className="text-center">
             <p className="font-display text-xs uppercase tracking-[0.35em] text-aura-400/90 mb-2">aura.</p>
-            <h2 className="text-2xl font-display font-semibold text-zinc-100 mb-2 tracking-tight">Create account</h2>
-            <p className="text-zinc-500 text-sm font-medium tracking-wide">Join Aura to save your sessions</p>
+            <h2 className="text-2xl font-display font-semibold text-zinc-100 mb-2 tracking-tight">Welcome back</h2>
+            <p className="text-zinc-500 text-sm font-medium tracking-wide">Sign in to continue</p>
           </div>
 
           {error && (
@@ -66,7 +69,7 @@ export default function Register() {
               <input
                 type="text"
                 name="username"
-                placeholder="Choose a username"
+                placeholder="Enter your username"
                 value={formData.username}
                 onChange={handleChange}
                 className={inputClasses}
@@ -79,7 +82,7 @@ export default function Register() {
               <input
                 type="password"
                 name="password"
-                placeholder="Create a strong password"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 className={inputClasses}
@@ -88,7 +91,7 @@ export default function Register() {
             </div>
 
             <button type="submit" disabled={isLoading} className={`${btnClasses} mt-2 disabled:opacity-50 disabled:cursor-not-allowed`}>
-              {isLoading ? 'Creating account…' : 'Create account'}
+              {isLoading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
@@ -104,9 +107,9 @@ export default function Register() {
           </a>
 
           <p className="text-center text-zinc-500 text-sm mt-2">
-            Already have an account?{' '}
-            <Link to="/login" className="text-aura-400 hover:text-aura-300 transition-colors font-medium">
-              Sign in
+            Don&apos;t have an account?{' '}
+            <Link to="/register" className="text-aura-400 hover:text-aura-300 transition-colors font-medium">
+              Register
             </Link>
           </p>
         </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { IoRadioOutline, IoSyncOutline, IoChatbubblesOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import Card from "./Card";
+import Card from '../common/Card';
 import { motion } from "motion/react";
 import { IoPlayCircleOutline, IoSparklesOutline } from "react-icons/io5";
 

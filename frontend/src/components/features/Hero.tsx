@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useContext } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { IoIosArrowRoundForward } from "react-icons/io";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Hero() {
     const [titleNumber, setTitleNumber] = useState(0);

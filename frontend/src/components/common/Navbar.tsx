@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from '../../context/AuthContext';
 
 const navLink =
   "text-sm font-medium text-zinc-400 transition-colors duration-200 hover:text-aura-300";

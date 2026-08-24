@@ -1,16 +1,16 @@
 import React, { lazy, Suspense } from "react";
-import Home from "./components/Home";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Jam from "./components/Jam";
-import Create from "./components/Create";
-import AuthCallback from "./components/AuthCallback";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Jam from "./pages/Jam";
+import Create from "./pages/Create";
+import AuthCallback from "./pages/AuthCallback";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
-const PrivacyPolicy = lazy(() => import("./components/LegalPrivacy"));
-const Terms = lazy(() => import("./components/LegalTerms"));
+const PrivacyPolicy = lazy(() => import("./pages/LegalPrivacy"));
+const Terms = lazy(() => import("./pages/LegalTerms"));
 
 export default function App() {
   return (
