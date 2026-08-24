@@ -293,9 +293,11 @@ export default function Jam() {
                                     </span>
                                     <div className='flex flex-col gap-1'>
                                         <h1 className='text-3xl font-display font-bold uppercase tracking-tight text-white/90 group-hover:text-white transition-colors duration-300'>
-                                            Enter Room
+                                            {roomData.roomName || 'Enter Room'}
                                         </h1>
-                                        <h2 className='font-sans font-semibold uppercase tracking-widest text-white/70 group-hover:text-white/80 transition-colors duration-300'>TYPE: {roomData.type}</h2>
+                                        <h2 className='font-sans font-semibold uppercase tracking-widest text-white/70 group-hover:text-white/80 transition-colors duration-300'>
+                                            TYPE: {roomData.type} &bull; CREATED BY: {roomData.createdBy || 'Unknown'}
+                                        </h2>
                                     </div>
                                     <div className='flex flex-col gap-2'>
                                         <label htmlFor="userName" className='text-sm font-semibold uppercase tracking-[0.08em] text-white/80 group-hover:text-white transition-colors duration-300'>

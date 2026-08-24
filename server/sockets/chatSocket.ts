@@ -1,6 +1,6 @@
 const { getRoomHistory, saveMessage } = require("../services/chatService");
 const { cueSong, getQueue, nextSong, removeSong } = require("../services/ytMusic");
-const { joinUser, getUsersInRoom, removeUser } = require("../services/roomService");
+const { joinUser, getUsersInRoom, removeUser, deleteRoom } = require("../services/roomService");
 
 const skipLocks = new Map();
 
@@ -116,11 +116,15 @@ const connectIO = (io) => {
                 await removeUser(socket.roomId, socket.userId, socket.userName, socket.avatarUrl);
 
                 const users = await getUsersInRoom(socket.roomId);
-                io.to(socket.roomId).emit("update-users", users);
-
-                const leaveMsg = { message: `${socket.userName} has left the room`, sender: "System" };
-                socket.to(socket.roomId).emit("receive-message", leaveMsg);
-                await saveMessage(socket.roomId, leaveMsg);
+                
+                if (users.length === 0) {
+                    await deleteRoom(socket.roomId);
+                } else {
+                    io.to(socket.roomId).emit("update-users", users);
+                    const leaveMsg = { message: `${socket.userName} has left the room`, sender: "System" };
+                    socket.to(socket.roomId).emit("receive-message", leaveMsg);
+                    await saveMessage(socket.roomId, leaveMsg);
+                }
             }
         });
 

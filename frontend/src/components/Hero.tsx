@@ -106,13 +106,13 @@ export default function Hero() {
                             Create a space, queue tracks, and listen with friends in real time, playback and chat stay locked to the room.
                         </p>
                         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                            <Link
-                                to="/create"
-                                className="inline-flex flex-row items-center justify-center gap-1 rounded-full pl-6 pr-4 py-3 bg-aura-400 text-zinc-950 font-semibold text-sm shadow-[0_0_40px_rgba(212,165,116,0.35)] hover:bg-aura-300 transition-colors w-full sm:w-auto"
-                            >
-                                Start a room
-                                <IoIosArrowRoundForward className="size-7 shrink-0" aria-hidden />
-                            </Link>
+                                <Link
+                                    to="/create"
+                                    className="inline-flex flex-row items-center justify-center gap-1 rounded-full pl-6 pr-4 py-3 bg-aura-400 text-zinc-950 font-semibold text-sm shadow-[0_0_40px_rgba(212,165,116,0.35)] hover:bg-aura-300 transition-colors w-full sm:w-auto"
+                                >
+                                    Start or Join a Room
+                                    <IoIosArrowRoundForward className="size-7 shrink-0" aria-hidden />
+                                </Link>
                             {user ? (
                                 <></>
                             ) : (
