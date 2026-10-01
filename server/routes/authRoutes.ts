@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('../config/passport');
-const dotenv = require('dotenv');
-dotenv.config({ path: "./.env" });
 
 const { register, login, googleCallback, checkStatus, refresh, logout } = require('../controller/authController');
 
