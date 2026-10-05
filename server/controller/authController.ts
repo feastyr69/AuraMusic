@@ -1,6 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../database/db');
+const musicTasteTags = new Set([
+    'Pop', 'Hip-hop', 'R&B', 'Rock', 'Indie', 'Electronic',
+    'Jazz', 'Classical', 'Metal', 'Country', 'K-pop', 'Latin',
+]);
 
 const isValidUsername = (value) => /^[a-z0-9_]{3,20}$/.test(value);
 const isValidEmail = (value) => value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -219,6 +223,15 @@ const setUsername = async (req, res) => {
         return res.status(400).json({ status: false, message: 'Username must use 3–20 letters, numbers, or underscores' });
     }
 
+    const hasMusicTastes = Object.prototype.hasOwnProperty.call(req.body, 'musicTastes');
+    const musicTastes = req.body.musicTastes;
+    if (hasMusicTastes && (!Array.isArray(musicTastes)
+        || (musicTastes.length !== 0 && musicTastes.length !== 3)
+        || new Set(musicTastes).size !== musicTastes.length
+        || musicTastes.some((taste) => !musicTasteTags.has(taste)))) {
+        return res.status(400).json({ status: false, message: 'Choose exactly three valid music tastes, or none' });
+    }
+
     try {
         const conflictingLegacy = await db.query(
             'SELECT id FROM users WHERE id <> $1 AND lower(trim(legacy_username)) = $2 LIMIT 1',
@@ -228,8 +241,11 @@ const setUsername = async (req, res) => {
             return res.status(409).json({ status: false, message: 'Username already exists' });
         }
         const updated = await db.query(
-            'UPDATE users SET username = $1, legacy_username = NULL WHERE id = $2 RETURNING id, username, google_id, created_at, avatar_url, google_name, display_name',
-            [username, claims.id]
+            `UPDATE users SET username = $1, legacy_username = NULL,
+                music_tastes = COALESCE($2::text[], music_tastes)
+             WHERE id = $3
+             RETURNING id, username, google_id, created_at, avatar_url, google_name, display_name`,
+            [username, hasMusicTastes ? musicTastes : null, claims.id]
         );
         if (!updated.rows.length) return res.status(404).json({ status: false, message: 'Account not found' });
 

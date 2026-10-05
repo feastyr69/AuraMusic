@@ -23,10 +23,11 @@ function AuthFlowGate({ children }) {
   if (loading && pathname !== '/auth/callback') {
     return <div className="flex min-h-screen items-center justify-center text-sm text-zinc-500">Loading Aura…</div>;
   }
-  if (pathname === '/setup-username') {
-    return user ? children : <Navigate to="/login" replace />;
+  if (pathname === '/setup') {
+    if (!user) return <Navigate to="/login" replace />;
+    return user.username ? <Navigate to="/" replace /> : children;
   }
-  if (user && !user.username) return <Navigate to="/setup-username" replace />;
+  if (user && !user.username) return <Navigate to="/setup" replace />;
   return children;
 }
 
@@ -52,7 +53,7 @@ export default function App() {
           <Route path="/jam/:roomId" element={<Jam />} />
           <Route path="/create" element={<Create />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/setup-username" element={<UsernameSetup />} />
+          <Route path="/setup" element={<UsernameSetup />} />
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/privacy-policy" element={<Suspense fallback={null}><PrivacyPolicy /></Suspense>} />
           <Route path="/terms" element={<Suspense fallback={null}><Terms /></Suspense>} />

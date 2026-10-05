@@ -22,7 +22,7 @@ export default function AuthCallback() {
 
       if (token) {
         const user = await login(token);
-        navigate(user?.username ? '/' : '/setup-username', { replace: true });
+        navigate(user?.username ? '/' : '/setup', { replace: true });
       } else {
         navigate('/login?error=Authentication%20failed');
       }

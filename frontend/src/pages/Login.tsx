@@ -32,7 +32,7 @@ export default function Login() {
 
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
       const loggedInUser = await login(data.token);
-      navigate(loggedInUser?.username ? '/' : '/setup-username');
+      navigate(loggedInUser?.username ? '/' : '/setup');
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || err.message);

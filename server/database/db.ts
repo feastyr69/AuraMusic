@@ -26,6 +26,7 @@ const initDb = async () => {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(80);
             ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(280) NOT NULL DEFAULT '';
             ALTER TABLE users ADD COLUMN IF NOT EXISTS stats_public BOOLEAN NOT NULL DEFAULT TRUE;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS music_tastes TEXT[] NOT NULL DEFAULT '{}';
             CREATE TABLE IF NOT EXISTS listening_stats (
                 user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
                 listened_seconds BIGINT NOT NULL DEFAULT 0,

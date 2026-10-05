@@ -44,23 +44,42 @@ test('signs in with email identifier', async ({ page }) => {
 });
 
 test('requires Google users to choose username before app access', async ({ page }) => {
+  let setupBody;
   await page.route('**/api/auth/refresh', (route) => route.fulfill({
     contentType: 'application/json',
     body: JSON.stringify({ success: true, accessToken: 'google-token', user: { id: 2, username: null } }),
   }));
-  await page.route('**/api/auth/username', (route) => route.fulfill({
-    contentType: 'application/json',
-    body: JSON.stringify({ status: true, token: 'updated-token', user: { id: 2, username: 'google_fan' } }),
-  }));
+  await page.route('**/api/auth/username', async (route) => {
+    setupBody = route.request().postDataJSON();
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ status: true, token: 'updated-token', user: { id: 2, username: 'google_fan' } }),
+    });
+  });
   await page.route('**/api/auth/status', (route) => route.fulfill({
     contentType: 'application/json',
     body: JSON.stringify({ success: true, user: { id: 2, username: 'google_fan' } }),
   }));
 
   await page.goto('/');
-  await expect(page).toHaveURL(/\/setup-username$/);
+  await expect(page).toHaveURL(/\/setup$/);
   await page.getByLabel('Username').fill('google_fan');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  for (const taste of ['Indie', 'R&B', 'Electronic']) {
+    await page.getByRole('button', { name: taste, exact: true }).click();
+  }
+  await page.getByRole('button', { name: 'Let’s go' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  expect(setupBody).toEqual({ username: 'google_fan', musicTastes: ['Indie', 'R&B', 'Electronic'] });
+});
+
+test('redirects users with a username away from onboarding', async ({ page }) => {
+  await page.route('**/api/auth/refresh', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, accessToken: 'existing-user-token', user: { id: 3, username: 'already_set_up' } }),
+  }));
+
+  await page.goto('/setup');
+
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -73,7 +92,7 @@ test('views a public profile and its listening statistics', async ({ page }) => 
   await page.route('**/api/profiles/alex', (route) => route.fulfill({
     contentType: 'application/json',
     body: JSON.stringify({
-      username: 'alex', displayName: 'Alex', avatarUrl: null, bio: 'Music fan',
+      username: 'alex', displayName: 'Alex', avatarUrl: null, bio: 'Music fan', musicTastes: ['Indie', 'Jazz', 'Pop'],
       createdAt: '2025-01-01T00:00:00.000Z', isOwner: false, statsPublic: true,
       stats: { listenedMinutes: 125, roomSessions: 8, topArtists: [{ artist: 'Artist', listenedMinutes: 60 }], topTracks: [{ videoId: 'track1', title: 'Track', artist: 'Artist', listenedMinutes: 60 }] },
     }),
@@ -83,6 +102,7 @@ test('views a public profile and its listening statistics', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Alex', exact: true })).toBeVisible();
   await expect(page.getByText('125 min')).toBeVisible();
   await expect(page.getByText('Track', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Music tastes')).toContainText('Indie');
 });
 
 test('edits own profile and saves statistics visibility', async ({ page }) => {
