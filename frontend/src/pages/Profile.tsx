@@ -141,10 +141,8 @@ export default function Profile() {
           </div>
         ) : profile && (
           <div className="relative grid items-stretch gap-6 lg:grid-cols-[minmax(16rem,0.9fr)_minmax(0,1.6fr)]">
-            <motion.section
-              layout
-              transition={{ layout: { duration: transitionDuration, ease: [0.22, 1, 0.36, 1] } }}
-              className={`${cardClass} relative overflow-hidden p-6 md:p-7 ${editing && profile.isOwner ? 'h-full lg:col-span-2 lg:z-20 border-aura-300/15 bg-gradient-to-br from-aura-300/[0.08] via-zinc-950/90 to-fuchsia-400/[0.05]' : ''}`}
+            <section
+              className={`${cardClass} relative z-10 col-span-full row-start-1 w-full justify-self-start overflow-hidden p-6 transition-[width,border-color,background-color] duration-500 ease-out motion-reduce:transition-none md:p-7 lg:w-[calc(36%_-_0.54rem)] ${editing && profile.isOwner ? 'z-20 border-aura-300/15 bg-gradient-to-br from-aura-300/[0.08] via-zinc-950/90 to-fuchsia-400/[0.05] lg:w-full' : ''}`}
             >
               <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-aura-400/10 blur-3xl" />
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-aura-300/[0.06] to-transparent" />
@@ -180,9 +178,9 @@ export default function Profile() {
                   {editing && profile.isOwner && (
                     <motion.aside
                       key="profile-fields"
-                      initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: prefersReducedMotion ? 0 : 8 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       transition={{ duration: transitionDuration, ease: 'easeOut' }}
                       className="min-w-0 space-y-4 rounded-3xl border border-white/[0.08] bg-black/20 p-4 sm:p-5"
                     >
@@ -224,10 +222,10 @@ export default function Profile() {
                   )}
                 </AnimatePresence>
               </div>
-            </motion.section>
+            </section>
 
             <motion.div
-              animate={{ opacity: editing ? 0 : 1, x: editing && !prefersReducedMotion ? 8 : 0 }}
+              animate={{ opacity: editing ? 0 : 1 }}
               transition={{ duration: transitionDuration, ease: 'easeOut' }}
               aria-hidden={editing}
               className={`min-w-0 space-y-6 lg:col-start-2 lg:row-start-1 ${editing ? 'pointer-events-none hidden lg:block' : ''}`}
