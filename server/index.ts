@@ -57,6 +57,7 @@ app.use(session({
 
 
 const authRouter = require("./routes/authRoutes");
+const profileRouter = require("./routes/profileRoutes");
 const passport = require("./config/passport");
 
 app.use(passport.initialize());
@@ -67,6 +68,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/profiles", profileRouter);
 app.use("/api", apiRouter);
 
 httpServer.listen(8000, () => {

@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Jam from "./pages/Jam";
 import Create from "./pages/Create";
 import AuthCallback from "./pages/AuthCallback";
+import Profile from "./pages/Profile";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/jam/:roomId" element={<Jam />} />
         <Route path="/create" element={<Create />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/profile/:username" element={<Profile />} />
         <Route path="/privacy-policy" element={<Suspense fallback={null}><PrivacyPolicy /></Suspense>} />
         <Route path="/terms" element={<Suspense fallback={null}><Terms /></Suspense>} />
       </Routes>
@@ -42,5 +44,4 @@ export default function App() {
     </>
   );
 }
-
 

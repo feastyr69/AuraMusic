@@ -3,6 +3,7 @@ import { IoSend } from "react-icons/io5";
 import { AnimatePresence, motion } from 'motion/react';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { Grid } from '@giphy/react-components';
+import { getAccessToken } from '../../axiosInstance';
 
 const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY);
 
@@ -105,7 +106,7 @@ export default function Chat({ roomId, sessionId, userName, avatarUrl, className
 
     useEffect(() => {
         const timestamp = Date.now();
-        const clientData = { roomId, sessionId, userName, avatarUrl, joinedAt: timestamp };
+        const clientData = { roomId, sessionId, userName, avatarUrl, joinedAt: timestamp, accessToken: getAccessToken() };
 
         socket.emit('join-room', clientData);
         socket.on('room-history', (history) => {

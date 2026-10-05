@@ -10,7 +10,7 @@ import generateUserName from '../utils/nameGenerator';
 import { io } from 'socket.io-client'
 import { IoChevronForward } from 'react-icons/io5';
 import { AnimatePresence, motion } from 'motion/react';
-import { apiBaseURL } from '../axiosInstance';
+import { apiBaseURL, getAccessToken } from '../axiosInstance';
 import backendUrl from '../utils/backendUrl';
 import { FaCheck } from 'react-icons/fa';
 import { IoPersonAdd } from 'react-icons/io5'
@@ -99,6 +99,10 @@ export default function Jam() {
     useEffect(() => { userNameRef.current = username; }, [username]);
     useEffect(() => { avatarUrlRef.current = user?.avatar_url ?? null; }, [user]);
 
+    useEffect(() => {
+        if (showPlayer && user) socket.emit('authenticate-session', getAccessToken());
+    }, [showPlayer, user]);
+
     // Auto-reconnect: re-join room whenever the socket reconnects
     useEffect(() => {
         const handleConnect = () => {
@@ -114,6 +118,7 @@ export default function Jam() {
                     userName: userNameRef.current,
                     avatarUrl: avatarUrlRef.current,
                     joinedAt: Date.now(),
+                    accessToken: getAccessToken(),
                 });
             }
         };

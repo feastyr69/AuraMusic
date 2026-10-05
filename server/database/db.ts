@@ -19,6 +19,22 @@ const initDb = async () => {
             );
             ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255);
             ALTER TABLE users ADD COLUMN IF NOT EXISTS google_name VARCHAR(255);
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(80);
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(280) NOT NULL DEFAULT '';
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS stats_public BOOLEAN NOT NULL DEFAULT TRUE;
+            CREATE TABLE IF NOT EXISTS listening_stats (
+                user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                listened_seconds BIGINT NOT NULL DEFAULT 0,
+                room_sessions BIGINT NOT NULL DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS listening_tracks (
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                video_id VARCHAR(32) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                artist VARCHAR(255) NOT NULL,
+                listened_seconds BIGINT NOT NULL DEFAULT 0,
+                PRIMARY KEY (user_id, video_id)
+            );
         `);
         console.log("Database tables initialized.");
     } catch (err) {

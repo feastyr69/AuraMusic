@@ -56,7 +56,15 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-6 w-32 flex flex-col py-2 bg-zinc-900 border border-white/[0.1] shadow-2xl rounded-xl overflow-hidden z-50">
+                      className="absolute right-0 mt-6 w-44 flex flex-col py-2 bg-zinc-900 border border-white/[0.1] shadow-2xl rounded-xl overflow-hidden z-50">
+                      <Link
+                        to={`/profile/${encodeURIComponent(user.username)}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => setDropdownOpen(false)}
+                        className="w-full px-4 py-2 text-sm text-zinc-300 hover:text-aura-300 transition-colors"
+                      >
+                        View profile
+                      </Link>
                       <button
                         onMouseDown={(e) => {
                           e.preventDefault(); // Prevent onBlur from firing before click
