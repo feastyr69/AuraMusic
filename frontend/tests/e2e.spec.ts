@@ -106,6 +106,7 @@ test('views a public profile and its listening statistics', async ({ page }) => 
 });
 
 test('edits own profile and saves statistics visibility', async ({ page }) => {
+  await page.setViewportSize({ width: 1365, height: 900 });
   let profile = {
     username: 'alex', displayName: 'Alex', avatarUrl: null, bio: '',
     createdAt: '2025-01-01T00:00:00.000Z', isOwner: true, statsPublic: true,
@@ -123,15 +124,47 @@ test('edits own profile and saves statistics visibility', async ({ page }) => {
   });
 
   await page.goto('/profile/alex');
+  const profileCard = page.getByTestId('profile-card');
+  const originalCardBox = await profileCard.boundingBox();
+  expect(originalCardBox).not.toBeNull();
+
   await page.getByRole('button', { name: 'Edit profile' }).click();
+  const editor = page.getByTestId('profile-editor');
+  await expect(editor).toBeVisible();
+  await expect(page.getByTestId('profile-stats')).toHaveCSS('opacity', '0');
+  const expandedCardBox = await profileCard.boundingBox();
+  const desktopEditorBox = await editor.boundingBox();
+  expect(expandedCardBox).not.toBeNull();
+  expect(desktopEditorBox).not.toBeNull();
+  expect(desktopEditorBox!.x).toBeGreaterThanOrEqual(expandedCardBox!.x);
+  expect(desktopEditorBox!.y).toBeGreaterThanOrEqual(expandedCardBox!.y);
+  expect(desktopEditorBox!.x + desktopEditorBox!.width).toBeLessThanOrEqual(expandedCardBox!.x + expandedCardBox!.width + 1);
+  expect(desktopEditorBox!.y + desktopEditorBox!.height).toBeLessThanOrEqual(expandedCardBox!.y + expandedCardBox!.height + 1);
+  expect(Math.abs(expandedCardBox!.height - originalCardBox!.height)).toBeLessThanOrEqual(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
   await page.getByLabel('Display name').fill('Alex Moon');
   await page.getByLabel('Bio').fill('Into late night jams');
-  await page.getByLabel('Show my listening statistics on my public profile').uncheck();
+  await page.getByLabel('Make listening statistics public').uncheck();
   await page.getByRole('button', { name: 'Save profile' }).click();
   await expect(page.getByRole('heading', { name: 'Alex Moon' })).toBeVisible();
-  await expect(page.getByText('Into late night jams')).toBeVisible();
+  await expect(page.getByTestId('profile-details').getByText('Into late night jams')).toBeVisible();
+
   await page.getByRole('button', { name: 'Edit profile' }).click();
-  await expect(page.getByLabel('Show my listening statistics on my public profile')).not.toBeChecked();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(editor).toBeVisible();
+  const mobileCardBox = await profileCard.boundingBox();
+  const profileDetailsBox = await page.getByTestId('profile-details').boundingBox();
+  const mobileEditorBox = await editor.boundingBox();
+  expect(mobileCardBox).not.toBeNull();
+  expect(profileDetailsBox).not.toBeNull();
+  expect(mobileEditorBox).not.toBeNull();
+  expect(mobileEditorBox!.y).toBeGreaterThanOrEqual(profileDetailsBox!.y + profileDetailsBox!.height - 1);
+  expect(mobileEditorBox!.x).toBeGreaterThanOrEqual(mobileCardBox!.x);
+  expect(mobileEditorBox!.x + mobileEditorBox!.width).toBeLessThanOrEqual(mobileCardBox!.x + mobileCardBox!.width + 1);
+  expect(mobileEditorBox!.y + mobileEditorBox!.height).toBeLessThanOrEqual(mobileCardBox!.y + mobileCardBox!.height + 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect(page.getByLabel('Make listening statistics public')).not.toBeChecked();
 });
 
 test('changes username and moves profile to new public URL', async ({ page }) => {

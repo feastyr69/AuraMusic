@@ -25,7 +25,7 @@ type ProfileData = {
 };
 
 const cardClass = 'rounded-3xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl';
-const inputClass = 'w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-aura-400/50';
+const inputClass = 'w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-aura-400/50';
 
 export default function Profile() {
   const { username = '' } = useParams();
@@ -142,12 +142,20 @@ export default function Profile() {
         ) : profile && (
           <div className="relative grid items-stretch gap-6 lg:grid-cols-[minmax(16rem,0.9fr)_minmax(0,1.6fr)]">
             <section
-              className={`${cardClass} relative z-10 col-span-full row-start-1 w-full justify-self-start overflow-hidden p-6 transition-[width,border-color,background-color] duration-500 ease-out motion-reduce:transition-none md:p-7 lg:w-[calc(36%_-_0.54rem)] ${editing && profile.isOwner ? 'z-20 border-aura-300/15 bg-gradient-to-br from-aura-300/[0.08] via-zinc-950/90 to-fuchsia-400/[0.05] lg:w-full' : ''}`}
+              data-testid="profile-card"
+              className={`relative z-10 col-span-full row-start-1 w-full overflow-hidden rounded-3xl lg:min-h-0 ${editing && profile.isOwner ? 'z-20' : ''}`}
             >
-              <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-aura-400/10 blur-3xl" />
-              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-aura-300/[0.06] to-transparent" />
-              <div className={`relative ${editing && profile.isOwner ? 'grid items-start gap-5 lg:grid-cols-[minmax(16rem,0.9fr)_minmax(0,1.6fr)]' : ''}`}>
-                <div className="min-w-0 flex flex-col items-center text-center lg:items-start lg:text-left">
+              <div
+                aria-hidden="true"
+                className={`${cardClass} pointer-events-none absolute inset-y-0 left-0 z-0 w-full rounded-3xl transition-[width,border-color,background-color] duration-500 ease-out motion-reduce:transition-none lg:w-[calc(36%_-_0.54rem)] ${editing && profile.isOwner ? 'border-aura-300/15 bg-gradient-to-br from-aura-300/[0.08] via-zinc-950/90 to-fuchsia-400/[0.05] lg:w-full' : ''}`}
+              />
+              <div aria-hidden="true" className="pointer-events-none absolute left-[10%] top-0 z-0 h-64 w-64 rounded-full bg-aura-400/10 blur-3xl" />
+              <div
+                aria-hidden="true"
+                className={`pointer-events-none absolute left-0 top-0 z-0 h-28 w-full bg-gradient-to-b from-aura-300/[0.06] to-transparent lg:w-[calc(36%_-_0.54rem)] ${editing && profile.isOwner ? 'lg:w-full' : ''}`}
+              />
+              <div className="relative z-10 grid grid-cols-1 items-start gap-5 p-6 md:p-7 lg:h-full lg:grid-cols-[minmax(16rem,0.9fr)_minmax(0,1.6fr)] lg:items-stretch">
+                <div data-testid="profile-details" className="min-w-0 flex flex-col items-center text-center lg:items-start lg:text-left">
                   <div className="rounded-full bg-gradient-to-br from-aura-300/40 to-fuchsia-400/20 p-[2px]">
                     <motion.img
                       animate={{ rotate: prefersReducedMotion ? 0 : avatarRotation }}
@@ -168,7 +176,7 @@ export default function Profile() {
                   )}
                   <p className="mt-6 border-t border-white/[0.08] pt-4 text-xs text-zinc-500">Joined {new Date(profile.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
                   {profile.isOwner && (
-                    <button type="button" onClick={editing ? cancelEditing : beginEditing} className="mt-6 w-full rounded-xl border border-aura-300/25 bg-aura-300/[0.07] px-5 py-3 text-sm font-medium text-aura-200 transition hover:border-aura-300/45 hover:bg-aura-300/[0.12]">
+                    <button type="button" onClick={editing ? cancelEditing : beginEditing} className="mt-6 w-[90%] rounded-xl border border-aura-300/25 bg-aura-300/[0.07] px-5 py-3 text-sm font-medium text-aura-200 transition hover:border-aura-300/45 hover:bg-aura-300/[0.12]">
                       {editing ? 'Cancel editing' : 'Edit profile'}
                     </button>
                   )}
@@ -178,44 +186,47 @@ export default function Profile() {
                   {editing && profile.isOwner && (
                     <motion.aside
                       key="profile-fields"
+                      data-testid="profile-editor"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: transitionDuration, ease: 'easeOut' }}
-                      className="min-w-0 space-y-4 rounded-3xl border border-white/[0.08] bg-black/20 p-4 sm:p-5"
+                      className="no-scrollbar min-w-0 space-y-3 overflow-y-auto border-t border-white/[0.08] pt-4 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"
                     >
-                      <header className="flex items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
+                      <header className="flex items-center justify-between gap-3 border-b border-white/[0.08] pb-2">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-aura-300">Profile settings</p>
-                          <h2 className="mt-1 font-display text-xl font-semibold">Make it yours</h2>
+                          <h2 className="mt-0.5 font-display text-lg font-semibold">Make it yours</h2>
                         </div>
                         {error && <p role="alert" className="text-right text-sm text-rose-300">{error}</p>}
                       </header>
 
-                      <form onSubmit={saveUsername} className="space-y-2">
-                        <label className="block text-sm text-zinc-400" htmlFor="profile-username">Username</label>
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                          <input id="profile-username" aria-label="Username" minLength={3} maxLength={20} pattern="[A-Za-z0-9_]{3,20}" required value={profileUsername} onChange={(event) => setProfileUsername(event.target.value)} className={`${inputClass} flex-1`} />
-                          <button disabled={saving || profileUsername.toLowerCase() === profile.username} className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-zinc-300 transition hover:border-aura-400/40 hover:text-aura-200 disabled:opacity-50">Change username</button>
+                      <form onSubmit={saveUsername} className="space-y-1.5">
+                        <label className="block text-xs text-zinc-400" htmlFor="profile-username">Username</label>
+                        <div className="flex gap-2">
+                          <input id="profile-username" aria-label="Username" minLength={3} maxLength={20} pattern="[A-Za-z0-9_]{3,20}" required value={profileUsername} onChange={(event) => setProfileUsername(event.target.value)} className={`${inputClass} min-w-0 flex-1`} />
+                          <button disabled={saving || profileUsername.toLowerCase() === profile.username} className="shrink-0 rounded-xl border border-white/10 px-3 py-2 text-xs font-medium text-zinc-300 transition hover:border-aura-400/40 hover:text-aura-200 disabled:opacity-50">Change username</button>
                         </div>
-                        <p className="text-xs text-zinc-600">Use 3–20 letters, numbers, or underscores.</p>
+                        <p className="text-[11px] text-zinc-600">Use 3–20 letters, numbers, or underscores.</p>
                       </form>
 
-                      <form onSubmit={saveProfile} className="space-y-4 border-t border-white/[0.08] pt-4">
-                        <label className="block text-sm text-zinc-400">Display name
-                          <input aria-label="Display name" maxLength={80} required value={displayName} onChange={(event) => setDisplayName(event.target.value)} className={`${inputClass} mt-2`} />
-                        </label>
-                        <label className="block text-sm text-zinc-400">Bio
-                          <textarea aria-label="Bio" maxLength={280} rows={3} value={bio} onChange={(event) => setBio(event.target.value)} className={`${inputClass} mt-2 resize-y`} />
-                          <span className="mt-1 block text-right text-xs text-zinc-600">{bio.length}/280</span>
-                        </label>
-                        <label className="flex cursor-pointer items-center gap-3 text-sm text-zinc-300">
+                      <form onSubmit={saveProfile} className="space-y-3 border-t border-white/[0.08] pt-3">
+                        <div className="grid gap-3 lg:grid-cols-2">
+                          <label className="block text-xs text-zinc-400">Display name
+                            <input aria-label="Display name" maxLength={80} required value={displayName} onChange={(event) => setDisplayName(event.target.value)} className={`${inputClass} mt-1.5`} />
+                          </label>
+                          <label className="block text-xs text-zinc-400">Bio
+                            <textarea aria-label="Bio" maxLength={280} rows={2} value={bio} onChange={(event) => setBio(event.target.value)} className={`${inputClass} mt-1.5 resize-y`} />
+                            <span className="mt-0.5 block text-right text-[11px] text-zinc-600">{bio.length}/280</span>
+                          </label>
+                        </div>
+                        <label className="flex cursor-pointer items-center gap-2 text-xs text-zinc-300">
                           <input type="checkbox" checked={statsPublic} onChange={(event) => setStatsPublic(event.target.checked)} className="h-4 w-4 accent-aura-400" />
-                          Show my listening statistics on my public profile
+                          Make listening statistics public
                         </label>
-                        <div className="flex flex-wrap justify-end gap-2 border-t border-white/[0.08] pt-3">
-                          <button type="button" onClick={cancelEditing} className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-zinc-300 transition hover:border-white/25 hover:text-white">Discard</button>
-                          <button disabled={saving} className="rounded-xl bg-aura-400 px-5 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-aura-300 disabled:opacity-60">{saving ? 'Saving…' : 'Save profile'}</button>
+                        <div className="flex flex-wrap justify-end gap-2 border-t border-white/[0.08] pt-2">
+                          <button type="button" onClick={cancelEditing} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-zinc-300 transition hover:border-white/25 hover:text-white">Discard</button>
+                          <button disabled={saving} className="rounded-lg bg-aura-400 px-4 py-2 text-xs font-semibold text-zinc-950 transition hover:bg-aura-300 disabled:opacity-60">{saving ? 'Saving…' : 'Save profile'}</button>
                         </div>
                       </form>
                     </motion.aside>
@@ -225,6 +236,7 @@ export default function Profile() {
             </section>
 
             <motion.div
+              data-testid="profile-stats"
               animate={{ opacity: editing ? 0 : 1 }}
               transition={{ duration: transitionDuration, ease: 'easeOut' }}
               aria-hidden={editing}
