@@ -2,6 +2,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../database/db');
 
+const isValidUsername = (value) => /^[a-z0-9_]{3,20}$/.test(value);
+const isValidEmail = (value) => value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const getAccessClaims = (user) => ({
+    id: user.id,
+    username: user.username,
+    avatar_url: user.avatar_url,
+    google_name: user.google_name,
+});
+const publicUserQuery = `SELECT id, username, google_id, created_at, avatar_url, google_name, display_name
+                         FROM users WHERE id = $1`;
+
 const generateTokens = (userPayload) => {
     const accessToken = jwt.sign(
         userPayload,
@@ -32,31 +43,69 @@ const getCookieConfig = () => {
 };
 
 const register = async (req, res) => {
-    const { username, password } = req.body;
+    const username = typeof req.body.username === 'string' ? req.body.username.trim().toLowerCase() : '';
+    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const { password } = req.body;
+    if (!isValidUsername(username)) {
+        return res.status(400).json({ status: false, message: 'Username must use 3–20 letters, numbers, or underscores' });
+    }
+    if (!isValidEmail(email)) {
+        return res.status(400).json({ status: false, message: 'Enter a valid email address' });
+    }
+    if (typeof password !== 'string' || password.length === 0) {
+        return res.status(400).json({ status: false, message: 'Password is required' });
+    }
     try {
-        const existingUser = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        const existingUser = await db.query(
+            'SELECT id FROM users WHERE lower(username) IN ($1, $2) OR lower(email) IN ($1, $2) OR lower(trim(legacy_username)) IN ($1, $2) LIMIT 1',
+            [username, email]
+        );
         if (existingUser.rows.length > 0) {
-            return res.json({ status: false, message: "Username already exists" });
+            return res.status(409).json({ status: false, message: 'Username or email already exists' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await db.query(
-            'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username',
-            [username, hashedPassword]
+            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username',
+            [username, email, hashedPassword]
         );
 
         res.json({ status: true, message: "User created successfully", user: newUser.rows[0] });
     } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({ status: false, message: 'Username or email already exists' });
+        }
         console.error("Register Error:", error);
         res.status(500).json({ status: false, message: "Server error" });
     }
 };
 
 const login = async (req, res) => {
-    const { username, password } = req.body;
+    const rawIdentifier = typeof req.body.identifier === 'string'
+        ? req.body.identifier
+        : typeof req.body.username === 'string' ? req.body.username : '';
+    const identifier = rawIdentifier.trim().toLowerCase();
+    const { password } = req.body;
+    if (!identifier || typeof password !== 'string' || !password) {
+        return res.status(400).json({ status: false, message: 'Username or email and password are required' });
+    }
     try {
-        const user = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        // Collision cleanup keeps each original handle private for exact legacy login.
+        // Users are sent to username setup after login, where the alias is discarded.
+        let user = await db.query(
+            'SELECT * FROM users WHERE legacy_username = $1 LIMIT 1',
+            [rawIdentifier]
+        );
         if (user.rows.length === 0) {
+            user = await db.query(
+                'SELECT * FROM users WHERE lower(username) = $1 OR lower(email) = $1 LIMIT 2',
+                [identifier]
+            );
+        }
+        if (user.rows.length === 0) {
+            return res.status(200).json({ status: false, message: "Invalid credentials" });
+        }
+        if (user.rows.length > 1) {
             return res.status(200).json({ status: false, message: "Invalid credentials" });
         }
 
@@ -69,11 +118,11 @@ const login = async (req, res) => {
             return res.status(200).json({ status: false, message: "Invalid credentials" });
         }
 
-        const { accessToken, refreshToken } = generateTokens({ id: user.rows[0].id, username: user.rows[0].username, avatar_url: user.rows[0].avatar_url, google_name: user.rows[0].google_name });
+        const { accessToken, refreshToken } = generateTokens(getAccessClaims(user.rows[0]));
 
         res.cookie('refreshToken', refreshToken, getCookieConfig());
 
-        res.json({ status: true, token: accessToken, username: user.rows[0].username });
+        res.json({ status: true, token: accessToken, refreshToken, username: user.rows[0].username });
     } catch (error) {
         console.error("Login Error:", error);
         res.status(500).json({ status: false, message: "Server error" });
@@ -104,13 +153,13 @@ const refresh = async (req, res) => {
 
     try {
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret');
-        const userRes = await db.query('SELECT id, username, google_id, created_at, avatar_url, google_name FROM users WHERE id = $1', [decoded.id]);
+        const userRes = await db.query(publicUserQuery, [decoded.id]);
 
         if (userRes.rows.length === 0) {
             return res.status(401).json({ success: false, message: "Invalid user" });
         }
 
-        const { accessToken } = generateTokens({ id: userRes.rows[0].id, username: userRes.rows[0].username, avatar_url: userRes.rows[0].avatar_url, google_name: userRes.rows[0].google_name });
+        const { accessToken } = generateTokens(getAccessClaims(userRes.rows[0]));
 
         res.json({
             success: true,
@@ -134,7 +183,7 @@ const checkStatus = async (req, res) => {
         const token = authHeader.split(' ')[1];
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-            const userRes = await db.query('SELECT id, username, google_id, created_at, avatar_url, google_name FROM users WHERE id = $1', [decoded.id]);
+            const userRes = await db.query(publicUserQuery, [decoded.id]);
             if (userRes.rows.length > 0) {
                 return res.json({
                     success: true,
@@ -146,18 +195,55 @@ const checkStatus = async (req, res) => {
         }
     }
 
-    if (req.isAuthenticated()) {
-        res.json({
-            success: true,
-            user: req.user
-        })
-    } else {
-        res.json({
-            success: false,
-            user: null
-        })
+    if (req.isAuthenticated() && req.user?.id) {
+        const userRes = await db.query(publicUserQuery, [req.user.id]);
+        if (userRes.rows.length) return res.json({ success: true, user: userRes.rows[0] });
     }
+    return res.json({ success: false, user: null });
 }
+
+const setUsername = async (req, res) => {
+    const token = req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.slice(7)
+        : null;
+    let claims;
+    try {
+        if (!token) throw new Error('Missing access token');
+        claims = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    } catch (_error) {
+        return res.status(401).json({ status: false, message: 'Sign in to set a username' });
+    }
+
+    const username = typeof req.body.username === 'string' ? req.body.username.trim().toLowerCase() : '';
+    if (!isValidUsername(username)) {
+        return res.status(400).json({ status: false, message: 'Username must use 3–20 letters, numbers, or underscores' });
+    }
+
+    try {
+        const conflictingLegacy = await db.query(
+            'SELECT id FROM users WHERE id <> $1 AND lower(trim(legacy_username)) = $2 LIMIT 1',
+            [claims.id, username]
+        );
+        if (conflictingLegacy.rows.length) {
+            return res.status(409).json({ status: false, message: 'Username already exists' });
+        }
+        const updated = await db.query(
+            'UPDATE users SET username = $1, legacy_username = NULL WHERE id = $2 RETURNING id, username, google_id, created_at, avatar_url, google_name, display_name',
+            [username, claims.id]
+        );
+        if (!updated.rows.length) return res.status(404).json({ status: false, message: 'Account not found' });
+
+        const { accessToken, refreshToken } = generateTokens(getAccessClaims(updated.rows[0]));
+        res.cookie('refreshToken', refreshToken, getCookieConfig());
+        return res.json({ status: true, token: accessToken, refreshToken, user: updated.rows[0] });
+    } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({ status: false, message: 'Username already exists' });
+        }
+        console.error('Set username error:', error);
+        return res.status(500).json({ status: false, message: 'Could not set username' });
+    }
+};
 
 module.exports = {
     register,
@@ -165,5 +251,6 @@ module.exports = {
     googleCallback,
     checkStatus,
     refresh,
-    logout
+    logout,
+    setUsername
 };

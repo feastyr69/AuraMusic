@@ -15,13 +15,16 @@ export const AuthProvider = ({ children }) => {
       if (res.data.success && res.data.accessToken) {
         setAccessToken(res.data.accessToken);
         setUser(res.data.user);
+        return res.data.user;
       } else {
         setAccessToken(null);
         setUser(null);
+        return null;
       }
     } catch (error) {
       setAccessToken(null);
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -42,10 +45,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await apiBaseURL.get('/auth/status');
         setUser(res.data.user);
+        return res.data.user;
       } catch (e) {
-        await checkLoginStatus();
+        return await checkLoginStatus();
       }
     }
+    return null;
   };
 
   const logout = async () => {

@@ -6,6 +6,64 @@ test('has title', async ({ page }) => {
   await expect(page).toHaveTitle(/Aura - Listen together/);
 });
 
+test('registers with username, email, and password', async ({ page }) => {
+  let requestBody;
+  await page.route('**/api/auth/refresh', (route) => route.fulfill({ status: 401, contentType: 'application/json', body: '{}' }));
+  await page.route('**/api/auth/register', async (route) => {
+    requestBody = route.request().postDataJSON();
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ status: true }) });
+  });
+
+  await page.goto('/register');
+  await page.getByLabel('Username').fill('alex_music');
+  await page.getByLabel('Email').fill('alex@example.com');
+  await page.getByLabel('Password').fill('test-password');
+  await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  expect(requestBody).toEqual({ username: 'alex_music', email: 'alex@example.com', password: 'test-password' });
+});
+
+test('signs in with email identifier', async ({ page }) => {
+  let loginBody;
+  await page.route('**/api/auth/refresh', (route) => route.fulfill({ status: 401, contentType: 'application/json', body: '{}' }));
+  await page.route('**/api/auth/login', async (route) => {
+    loginBody = route.request().postDataJSON();
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ status: true, token: 'login-token' }) });
+  });
+  await page.route('**/api/auth/status', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, user: { id: 1, username: 'alex_music' } }),
+  }));
+
+  await page.goto('/login');
+  await page.getByLabel('Username or email').fill('alex@example.com');
+  await page.getByLabel('Password').fill('test-password');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  expect(loginBody).toEqual({ identifier: 'alex@example.com', password: 'test-password' });
+});
+
+test('requires Google users to choose username before app access', async ({ page }) => {
+  await page.route('**/api/auth/refresh', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, accessToken: 'google-token', user: { id: 2, username: null } }),
+  }));
+  await page.route('**/api/auth/username', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ status: true, token: 'updated-token', user: { id: 2, username: 'google_fan' } }),
+  }));
+  await page.route('**/api/auth/status', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, user: { id: 2, username: 'google_fan' } }),
+  }));
+
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/setup-username$/);
+  await page.getByLabel('Username').fill('google_fan');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page).toHaveURL(/\/$/);
+});
+
 test('views a public profile and its listening statistics', async ({ page }) => {
   await page.route('**/api/auth/refresh', (route) => route.fulfill({
     status: 401,
@@ -54,4 +112,35 @@ test('edits own profile and saves statistics visibility', async ({ page }) => {
   await expect(page.getByText('Into late night jams')).toBeVisible();
   await page.getByRole('button', { name: 'Edit profile' }).click();
   await expect(page.getByLabel('Show my listening statistics on my public profile')).not.toBeChecked();
+});
+
+test('changes username and moves profile to new public URL', async ({ page }) => {
+  let username = 'alex';
+  await page.route('**/api/auth/refresh', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, accessToken: 'old-token', user: { id: 1, username } }),
+  }));
+  await page.route('**/api/auth/username', async (route) => {
+    username = route.request().postDataJSON().username.toLowerCase();
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ status: true, token: 'new-token', refreshToken: 'new-refresh', user: { id: 1, username } }) });
+  });
+  await page.route('**/api/auth/status', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, user: { id: 1, username } }),
+  }));
+  await page.route('**/api/profiles/*', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({
+      username, displayName: 'Alex', avatarUrl: null, bio: '',
+      createdAt: '2025-01-01T00:00:00.000Z', isOwner: true, statsPublic: true,
+      stats: { listenedMinutes: 0, roomSessions: 0, topArtists: [], topTracks: [] },
+    }),
+  }));
+
+  await page.goto('/profile/alex');
+  await page.getByRole('button', { name: 'Edit profile' }).click();
+  await page.getByLabel('Username').fill('alex_new');
+  await page.getByRole('button', { name: 'Change username' }).click();
+  await expect(page).toHaveURL(/\/profile\/alex_new$/);
+  await expect(page.getByText('@alex_new')).toBeVisible();
 });

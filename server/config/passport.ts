@@ -31,22 +31,29 @@ passport.use(new GoogleStrategy({
             }
 
             // If not found, look up by email as username to link account or create new
-            const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : `user_${profile.id}`;
+            const email = profile.emails?.[0]?.value?.trim().toLowerCase();
+            if (!email) return cb(new Error('Google did not provide an email address'), null);
 
-            // Check if an account already exists with this email/username
-            const existingUser = await db.query('SELECT * FROM users WHERE username = $1', [email]);
-            if (existingUser.rows.length > 0) {
+            // Preserve existing account linking while keeping email separate from username.
+            const existingUser = await db.query(
+                'SELECT * FROM users WHERE lower(email) = $1 OR lower(username) = $1 LIMIT 2',
+                [email]
+            );
+            if (existingUser.rows.length > 1) {
+                return cb(new Error('Multiple accounts match this Google email'), null);
+            }
+            if (existingUser.rows.length === 1) {
                 // Update existing user with google_id
                 const updatedUser = await db.query(
-                    'UPDATE users SET google_id = $1, avatar_url = COALESCE(avatar_url, $2), google_name = COALESCE(google_name, $3) WHERE id = $4 RETURNING *',
-                    [profile.id, avatarUrl, googleName, existingUser.rows[0].id]
+                    'UPDATE users SET google_id = $1, email = COALESCE(email, $2), avatar_url = COALESCE(avatar_url, $3), google_name = COALESCE(google_name, $4) WHERE id = $5 RETURNING *',
+                    [profile.id, email, avatarUrl, googleName, existingUser.rows[0].id]
                 );
                 return cb(null, updatedUser.rows[0]);
             }
 
             // Create new user
             const insertRes = await db.query(
-                'INSERT INTO users (username, google_id, avatar_url, google_name) VALUES ($1, $2, $3, $4) RETURNING *',
+                'INSERT INTO users (email, google_id, avatar_url, google_name) VALUES ($1, $2, $3, $4) RETURNING *',
                 [email, profile.id, avatarUrl, googleName]
             );
             return cb(null, insertRes.rows[0]);

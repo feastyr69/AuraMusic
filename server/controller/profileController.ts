@@ -4,7 +4,7 @@ export const getProfile = async (req: any, res: any) => {
     try {
         const result = await db.query(
             `SELECT id, username, display_name, google_name, avatar_url, bio, stats_public, created_at
-             FROM users WHERE username = $1`,
+             FROM users WHERE lower(username) = lower($1)`,
             [req.params.username]
         );
         if (!result.rows.length) return res.status(404).json({ message: 'Profile not found' });

@@ -6,7 +6,7 @@ import Navbar from '../components/common/Navbar';
 import { FcGoogle } from 'react-icons/fc';
 
 export default function Register() {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await apiBaseURL.post("/auth/register", formData);
+      const response = await apiBaseURL.post('/auth/register', formData);
       const data = response.data;
 
       if (data.status) {
@@ -31,7 +31,7 @@ export default function Register() {
         setError(data.message);
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setIsLoading(false);
     }
@@ -62,27 +62,49 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="w-full">
-              <label className={labelClasses}>Username</label>
+              <label htmlFor="register-username" className={labelClasses}>Username</label>
               <input
+                id="register-username"
                 type="text"
                 name="username"
                 placeholder="Choose a username"
                 value={formData.username}
                 onChange={handleChange}
                 className={inputClasses}
+                minLength={3}
+                maxLength={20}
+                pattern="[A-Za-z0-9_]{3,20}"
+                autoComplete="username"
                 required
               />
             </div>
 
             <div className="w-full">
-              <label className={labelClasses}>Password</label>
+              <label htmlFor="register-email" className={labelClasses}>Email</label>
               <input
+                id="register-email"
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                className={inputClasses}
+                autoComplete="email"
+                required
+              />
+            </div>
+
+            <div className="w-full">
+              <label htmlFor="register-password" className={labelClasses}>Password</label>
+              <input
+                id="register-password"
                 type="password"
                 name="password"
                 placeholder="Create a strong password"
                 value={formData.password}
                 onChange={handleChange}
                 className={inputClasses}
+                autoComplete="new-password"
                 required
               />
             </div>

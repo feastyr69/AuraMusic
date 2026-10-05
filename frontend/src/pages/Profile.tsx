@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiBaseURL } from '../axiosInstance';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 
@@ -25,7 +27,10 @@ const inputClass = 'w-full rounded-xl border border-white/10 bg-black/20 px-4 py
 
 export default function Profile() {
   const { username = '' } = useParams();
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profileUsername, setProfileUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [statsPublic, setStatsPublic] = useState(true);
@@ -40,6 +45,7 @@ export default function Profile() {
     try {
       const response = await apiBaseURL.get(`/profiles/${encodeURIComponent(username)}`);
       setProfile(response.data);
+      setProfileUsername(response.data.username);
       setDisplayName(response.data.displayName);
       setBio(response.data.bio);
       setStatsPublic(response.data.statsPublic);
@@ -63,6 +69,23 @@ export default function Profile() {
       await loadProfile();
     } catch (saveError: any) {
       setError(saveError.response?.data?.message || 'Could not save profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveUsername = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const response = await apiBaseURL.patch('/auth/username', { username: profileUsername });
+      if (response.data.refreshToken) localStorage.setItem('refreshToken', response.data.refreshToken);
+      await login(response.data.token);
+      setEditing(false);
+      navigate(`/profile/${encodeURIComponent(response.data.user.username)}`, { replace: true });
+    } catch (saveError: any) {
+      setError(saveError.response?.data?.message || 'Could not update username.');
     } finally {
       setSaving(false);
     }
@@ -101,21 +124,31 @@ export default function Profile() {
             {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
 
             {editing && profile.isOwner && (
-              <form onSubmit={saveProfile} className={`${cardClass} space-y-5 p-6 md:p-8`}>
+              <div className={`${cardClass} space-y-7 p-6 md:p-8`}>
                 <h2 className="font-display text-xl font-semibold">Profile settings</h2>
-                <label className="block text-sm text-zinc-400">Display name
-                  <input aria-label="Display name" maxLength={80} required value={displayName} onChange={(event) => setDisplayName(event.target.value)} className={`${inputClass} mt-2`} />
-                </label>
-                <label className="block text-sm text-zinc-400">Bio
-                  <textarea aria-label="Bio" maxLength={280} rows={3} value={bio} onChange={(event) => setBio(event.target.value)} className={`${inputClass} mt-2 resize-y`} />
-                  <span className="mt-1 block text-right text-xs text-zinc-600">{bio.length}/280</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-3 text-sm text-zinc-300">
-                  <input type="checkbox" checked={statsPublic} onChange={(event) => setStatsPublic(event.target.checked)} className="h-4 w-4 accent-aura-400" />
-                  Show my listening statistics on my public profile
-                </label>
-                <button disabled={saving} className="rounded-full bg-aura-400 px-6 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-aura-300 disabled:opacity-60">{saving ? 'Saving...' : 'Save profile'}</button>
-              </form>
+                <form onSubmit={saveUsername} className="space-y-3">
+                  <label className="block text-sm text-zinc-400" htmlFor="profile-username">Username</label>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <input id="profile-username" aria-label="Username" minLength={3} maxLength={20} pattern="[A-Za-z0-9_]{3,20}" required value={profileUsername} onChange={(event) => setProfileUsername(event.target.value)} className={`${inputClass} flex-1`} />
+                    <button disabled={saving || profileUsername.toLowerCase() === profile.username} className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-zinc-300 transition hover:border-aura-400/40 hover:text-aura-200 disabled:opacity-50">Change username</button>
+                  </div>
+                  <p className="text-xs text-zinc-600">Use 3–20 letters, numbers, or underscores.</p>
+                </form>
+                <form onSubmit={saveProfile} className="space-y-5 border-t border-white/[0.08] pt-6">
+                  <label className="block text-sm text-zinc-400">Display name
+                    <input aria-label="Display name" maxLength={80} required value={displayName} onChange={(event) => setDisplayName(event.target.value)} className={`${inputClass} mt-2`} />
+                  </label>
+                  <label className="block text-sm text-zinc-400">Bio
+                    <textarea aria-label="Bio" maxLength={280} rows={3} value={bio} onChange={(event) => setBio(event.target.value)} className={`${inputClass} mt-2 resize-y`} />
+                    <span className="mt-1 block text-right text-xs text-zinc-600">{bio.length}/280</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-3 text-sm text-zinc-300">
+                    <input type="checkbox" checked={statsPublic} onChange={(event) => setStatsPublic(event.target.checked)} className="h-4 w-4 accent-aura-400" />
+                    Show my listening statistics on my public profile
+                  </label>
+                  <button disabled={saving} className="rounded-full bg-aura-400 px-6 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-aura-300 disabled:opacity-60">{saving ? 'Saving...' : 'Save profile'}</button>
+                </form>
+              </div>
             )}
 
             {profile.stats ? (
