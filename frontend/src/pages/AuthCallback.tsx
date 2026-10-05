@@ -21,8 +21,8 @@ export default function AuthCallback() {
       }
 
       if (token) {
-        await login(token);
-        navigate('/');
+        const user = await login(token);
+        navigate(user?.username ? '/' : '/setup', { replace: true });
       } else {
         navigate('/login?error=Authentication%20failed');
       }

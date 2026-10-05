@@ -32,10 +32,6 @@ const io = new Server(httpServer, {
 });
 
 const { initDb } = require("./database/db");
-initDb();
-
-//databaseConnection();
-connectRedis();
 connectIO(io);
 
 const cookieParser = require("cookie-parser");
@@ -57,6 +53,7 @@ app.use(session({
 
 
 const authRouter = require("./routes/authRoutes");
+const profileRouter = require("./routes/profileRoutes");
 const passport = require("./config/passport");
 
 app.use(passport.initialize());
@@ -67,8 +64,18 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/profiles", profileRouter);
 app.use("/api", apiRouter);
 
-httpServer.listen(8000, () => {
-  console.log("Server is running on port 8000");
+const startServer = async () => {
+  await initDb();
+  await connectRedis();
+  httpServer.listen(8000, () => {
+    console.log("Server is running on port 8000");
+  });
+};
+
+startServer().catch((error) => {
+  console.error('Server startup failed:', error);
+  process.exit(1);
 });

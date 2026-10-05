@@ -7,7 +7,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -30,11 +30,12 @@ export default function Login() {
         throw new Error(data.message || 'Login failed');
       }
 
-      await login(data.token);
-      navigate('/');
+      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+      const loggedInUser = await login(data.token);
+      navigate(loggedInUser?.username ? '/' : '/setup');
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setIsLoading(false);
     }
@@ -65,27 +66,31 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="w-full">
-              <label className={labelClasses}>Username</label>
+              <label htmlFor="login-identifier" className={labelClasses}>Username or email</label>
               <input
+                id="login-identifier"
                 type="text"
-                name="username"
-                placeholder="Enter your username"
-                value={formData.username}
+                name="identifier"
+                placeholder="Enter your username or email"
+                value={formData.identifier}
                 onChange={handleChange}
                 className={inputClasses}
+                autoComplete="username"
                 required
               />
             </div>
 
             <div className="w-full">
-              <label className={labelClasses}>Password</label>
+              <label htmlFor="login-password" className={labelClasses}>Password</label>
               <input
+                id="login-password"
                 type="password"
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 className={inputClasses}
+                autoComplete="current-password"
                 required
               />
             </div>
