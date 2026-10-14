@@ -1,9 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-test('has title', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/**', (route) => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    body: JSON.stringify({ success: false, message: 'No API mock configured for this request' }),
+  }));
+});
+
+test('starts without a backend and fails unmocked API calls promptly', async ({ page }) => {
+  const refreshResponse = page.waitForResponse((response) => response.url().includes('/api/auth/refresh'));
   await page.goto('/');
 
   await expect(page).toHaveTitle(/Aura - Listen together/);
+  expect((await refreshResponse).status()).toBe(503);
 });
 
 test('registers with username, email, and password', async ({ page }) => {
