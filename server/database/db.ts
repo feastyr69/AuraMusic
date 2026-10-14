@@ -71,7 +71,11 @@ const initDb = async () => {
 
         await client.query(`
             UPDATE users SET username = NULL
-            WHERE google_id IS NOT NULL AND password IS NULL AND email IS NOT NULL;
+            WHERE google_id IS NOT NULL
+              AND password IS NULL
+              AND email IS NOT NULL
+              AND username IS NOT NULL
+              AND lower(trim(username)) = lower(trim(email));
             WITH collision_groups AS (
                 SELECT lower(trim(username)) AS normalized_username
                 FROM users
